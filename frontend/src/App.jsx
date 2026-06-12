@@ -9,19 +9,18 @@ import Cart from "./pages/Cart.jsx";
 import CategoryPage from "./pages/CategoryPage.jsx";
 import { useCart } from "./hooks/useCart.js";
 
-// Thêm import cho LoginModal và Toast
 import LoginModal from "./components/Layout/LoginModal.jsx";
 import Toast from "./components/Layout/Toast.jsx";
+
+// 1. Import trang Chi tiết sản phẩm mới tạo vào đây
+import ProductDetail from "./pages/ProductDetail.jsx";
 
 function App() {
   const [showSidebar, setShowSidebar] = useState(false);
   const { cart, handleAddToCart, removeFromCart, clearCart } = useCart();
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
-  // State quản lý Login Modal
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-
-  // State quản lý Toast
   const [toast, setToast] = useState({
     isVisible: false,
     message: "",
@@ -38,7 +37,6 @@ function App() {
 
   return (
     <div className="font-sans min-h-screen flex flex-col bg-gray-50">
-      {/* Truyền onOpenLogin vào Header */}
       <Header
         cartItemCount={cartItemCount}
         onOpenLogin={() => setIsLoginOpen(true)}
@@ -48,7 +46,6 @@ function App() {
         <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
         <main className="flex-1 w-full max-w-7xl mx-auto p-4">
           <Routes>
-            {/* Truyền showToast xuống các Page */}
             <Route
               path="/"
               element={
@@ -76,19 +73,28 @@ function App() {
                 />
               }
             />
+
+            {/* 2. Cấu hình định tuyến động cho trang Chi tiết sản phẩm */}
+            <Route
+              path="/product/:productId"
+              element={
+                <ProductDetail
+                  onAddToCart={handleAddToCart}
+                  showToast={showToast}
+                />
+              }
+            />
           </Routes>
         </main>
       </div>
       <Footer />
 
-      {/* Render LoginModal */}
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
         showToast={showToast}
       />
 
-      {/* Render Toast */}
       {toast.isVisible && (
         <Toast
           message={toast.message}
