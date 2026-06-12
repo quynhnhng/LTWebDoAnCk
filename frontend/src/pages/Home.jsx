@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Product from "../components/Product/Product.jsx";
 
-export default function Home({ onAddToCart }) {
+export default function Home({ onAddToCart, showToast }) {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
@@ -30,6 +30,7 @@ export default function Home({ onAddToCart }) {
               title={prod.Title}
               price={prod.Price}
               onAddToCart={onAddToCart}
+              showToast={showToast}
             />
           ))}
         </section>

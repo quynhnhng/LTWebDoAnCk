@@ -16,8 +16,9 @@ export default function Sidebar({ showSidebar, setShowSidebar }) {
   return (
     <>
       {/* Nút bấm để mở/đóng Sidebar */}
+      {/* Đã hạ z-[1000] xuống z-40 ở dòng dưới */}
       <div
-        className="fixed top-[100px] left-5 z-[1000] flex items-center gap-2 cursor-pointer text-gray-800 bg-white p-3 rounded-md shadow-md hover:bg-gray-100 transition-colors border border-gray-200"
+        className="fixed top-[100px] left-5 z-40 flex items-center gap-2 cursor-pointer text-gray-800 bg-white p-3 rounded-md shadow-md hover:bg-gray-100 transition-colors border border-gray-200"
         onClick={() => setShowSidebar(!showSidebar)}
       >
         <MenuIcon />
@@ -27,8 +28,9 @@ export default function Sidebar({ showSidebar, setShowSidebar }) {
       </div>
 
       {/* Nội dung Menu Sidebar */}
+      {/* Đã hạ z-[999] xuống z-40 ở dòng dưới */}
       <div
-        className={`fixed top-[160px] left-5 bg-white p-4 w-[250px] rounded-lg shadow-2xl border border-gray-200 z-[999] transition-all duration-300 ${
+        className={`fixed top-[160px] left-5 bg-white p-4 w-[250px] rounded-lg shadow-2xl border border-gray-200 z-40 transition-all duration-300 ${
           showSidebar
             ? "opacity-100 visible translate-y-0"
             : "opacity-0 invisible -translate-y-4"
@@ -61,9 +63,7 @@ export default function Sidebar({ showSidebar, setShowSidebar }) {
                 </li>
               ))
             ) : (
-              <li className="p-2 text-gray-500 italic text-sm">
-                Đang tải danh mục...
-              </li>
+              <li className="p-2 text-gray-500 italic text-sm">Đang tải...</li>
             )}
           </ul>
         </aside>

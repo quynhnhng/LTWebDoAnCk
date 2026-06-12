@@ -14,12 +14,10 @@ export const useCart = () => {
             : item,
         ),
       );
-      alert(
-        `Đã tăng số lượng ${product.title} lên ${existingProduct.quantity + 1}`,
-      );
+      // Đã xóa alert cũ ở đây
     } else {
       setCart([...cart, { ...product, quantity: 1 }]);
-      alert(`Đã thêm ${product.title} vào giỏ hàng!`);
+      // Đã xóa alert cũ ở đây
     }
   };
 
@@ -27,7 +25,8 @@ export const useCart = () => {
     setCart(cart.filter((item) => item.id !== productId));
   };
 
-  const clearCart = async () => {
+  // Mình cho phép nhận hàm showToast để thay thế cho alert ở trang Giỏ Hàng
+  const clearCart = async (showToast) => {
     if (cart.length === 0) return;
 
     const totalPrice = cart.reduce(
@@ -49,13 +48,13 @@ export const useCart = () => {
 
       if (response.ok) {
         setCart([]);
-        alert("Thanh toán thành công!");
+        if (showToast) showToast("Thanh toán thành công!", "success");
       } else {
-        alert("Có lỗi xảy ra khi lưu đơn hàng!");
+        if (showToast) showToast("Có lỗi xảy ra khi lưu đơn hàng!", "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Không thể kết nối đến Backend!");
+      if (showToast) showToast("Không thể kết nối đến Backend!", "error");
     }
   };
 

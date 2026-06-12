@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Product from "../components/Product/Product.jsx";
 
-function CategoryPage({ onAddToCart }) {
+function CategoryPage({ onAddToCart, showToast }) {
   const { categorySlug } = useParams();
   const [products, setProducts] = useState([]);
 
@@ -33,6 +33,7 @@ function CategoryPage({ onAddToCart }) {
               title={prod.Title}
               price={prod.Price}
               onAddToCart={onAddToCart}
+              showToast={showToast}
             />
           ))}
         </section>

@@ -1,7 +1,8 @@
 import React from "react";
 import Product from "../components/Product/Product.jsx";
 
-function Cart({ cartItems, removeFromCart, clearCart }) {
+// 1. Thêm prop showToast vào đây
+function Cart({ cartItems, removeFromCart, clearCart, showToast }) {
   const totalPrice = cartItems.reduce((total, item) => {
     return total + item.price * item.quantity;
   }, 0);
@@ -33,6 +34,7 @@ function Cart({ cartItems, removeFromCart, clearCart }) {
                 quantity={item.quantity}
                 onRemove={removeFromCart}
                 buttonText="Xóa"
+                showToast={showToast} // 2. Truyền showToast xuống Product để hiện thông báo khi Xóa
               />
             ))}
           </div>
@@ -43,7 +45,8 @@ function Cart({ cartItems, removeFromCart, clearCart }) {
               <span className="text-green-600">{formatPrice(totalPrice)}</span>
             </h3>
             <button
-              onClick={clearCart}
+              // 3. Truyền showToast vào hàm clearCart để kích hoạt thông báo thanh toán
+              onClick={() => clearCart(showToast)}
               className="bg-green-600 hover:bg-green-700 text-white font-semibold text-lg px-8 py-3 rounded-lg shadow transition-colors"
             >
               Thanh Toán
