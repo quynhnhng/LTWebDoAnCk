@@ -7,6 +7,7 @@ const Product = ({
   onRemove,
   quantity,
   buttonText = "Thêm vào giỏ",
+  showToast, // <-- Nhận prop showToast truyền từ Home.jsx / CategoryPage.jsx xuống
 }) => {
   const displayPrice = price.toLocaleString("vi-VN") + "₫";
 
@@ -38,8 +39,17 @@ const Product = ({
           onClick={() => {
             if (onRemove) {
               onRemove(id);
+              // Kích hoạt thông báo khi xóa
+              if (showToast)
+                showToast("Đã xóa sản phẩm khỏi giỏ hàng", "success");
             } else if (onAddToCart) {
               onAddToCart({ id, src, title, price });
+              // Kích hoạt thông báo khi thêm thành công
+              if (showToast)
+                showToast(
+                  "Đã thêm sản phẩm vào giỏ hàng thành công!",
+                  "success",
+                );
             }
           }}
         >
