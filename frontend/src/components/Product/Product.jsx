@@ -5,20 +5,49 @@ const Product = ({
   src,
   title,
   price,
-  promoPrice, // Thêm prop nhận giá khuyến mãi
+  promoPrice,
   onAddToCart,
   onRemove,
   quantity,
   buttonText = "Thêm vào giỏ",
   showToast,
+  onOpenLogin,
 }) => {
-  // Nếu có giá khuyến mãi thì lấy giá khuyến mãi làm giá bán chính, giá gốc làm gạch ngang
   const hasPromo = promoPrice && promoPrice > 0;
   const finalPrice = hasPromo ? promoPrice : price;
 
+  const handleCartClick = () => {
+    if (onRemove) {
+      onRemove(id);
+      if (showToast) showToast("Đã xóa sản phẩm khỏi giỏ hàng", "success");
+      return;
+    }
+
+    // Kiểm tra đăng nhập
+    const user = (() => {
+      try {
+        return JSON.parse(localStorage.getItem("pcshop_user"));
+      } catch {
+        return null;
+      }
+    })();
+
+    if (!user) {
+      if (showToast)
+        showToast("Vui lòng đăng nhập để thêm vào giỏ hàng!", "error");
+      if (onOpenLogin) onOpenLogin();
+      return;
+    }
+
+    if (onAddToCart) {
+      onAddToCart({ id, src, title, price: finalPrice });
+      if (showToast)
+        showToast("Đã thêm sản phẩm vào giỏ hàng thành công!", "success");
+    }
+  };
+
   return (
     <div className="border border-gray-200 p-4 w-full max-w-[250px] mx-auto rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col">
-      {/* Click vào hình ảnh chuyển hướng về trang chi tiết */}
       <Link
         to={`/product/${id}`}
         className="hover:opacity-90 transition-opacity mb-4 block"
@@ -30,7 +59,6 @@ const Product = ({
         />
       </Link>
 
-      {/* Click vào tên sản phẩm chuyển hướng về trang chi tiết */}
       <Link
         to={`/product/${id}`}
         className="hover:text-primary transition-colors block mb-1"
@@ -40,7 +68,6 @@ const Product = ({
         </h3>
       </Link>
 
-      {/* Logic hiển thị hai dòng giá như hình của GearVN */}
       <div className="mb-2 h-12 flex flex-col justify-end">
         {hasPromo ? (
           <>
@@ -71,21 +98,7 @@ const Product = ({
               ? "bg-red-500 hover:bg-red-600"
               : "bg-blue-600 hover:bg-blue-700"
           }`}
-          onClick={() => {
-            if (onRemove) {
-              onRemove(id);
-              if (showToast)
-                showToast("Đã xóa sản phẩm khỏi giỏ hàng", "success");
-            } else if (onAddToCart) {
-              // Khi thêm vào giỏ hàng, ta dùng finalPrice để tính tiền chính xác (nếu đang giảm giá)
-              onAddToCart({ id, src, title, price: finalPrice });
-              if (showToast)
-                showToast(
-                  "Đã thêm sản phẩm vào giỏ hàng thành công!",
-                  "success",
-                );
-            }
-          }}
+          onClick={handleCartClick}
         >
           {buttonText}
         </button>

@@ -3,16 +3,13 @@ import { useParams } from "react-router-dom";
 import Product from "../components/Product/Product.jsx";
 import { Search } from "lucide-react";
 
-function CategoryPage({ onAddToCart, showToast }) {
+function CategoryPage({ onAddToCart, showToast, onOpenLogin }) {
   const { categorySlug } = useParams();
   const [products, setProducts] = useState([]);
-
-  // --- STATE QUẢN LÝ ---
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
@@ -21,8 +18,6 @@ function CategoryPage({ onAddToCart, showToast }) {
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);
-        // Reset toàn bộ filter và chuyển về trang 1 sau khi tải danh mục mới xong
-        // (Cách này gọi là Async Update, hoàn toàn không bị lỗi Cascading Renders)
         setSearchTerm("");
         setSortOrder("");
         setMinPrice("");
@@ -32,13 +27,11 @@ function CategoryPage({ onAddToCart, showToast }) {
       .catch((err) => console.error("Lỗi khi lấy dữ liệu:", err));
   }, [categorySlug]);
 
-  // Hàm xử lý chung khi người dùng thay đổi bộ lọc trực tiếp
   const handleFilterChange = (setter, value) => {
     setter(value);
     setCurrentPage(1);
   };
 
-  // --- LOGIC XỬ LÝ DỮ LIỆU ---
   let processedProducts = products.filter((prod) => {
     const matchSearch = prod.Title.toLowerCase().includes(
       searchTerm.toLowerCase(),
@@ -49,11 +42,9 @@ function CategoryPage({ onAddToCart, showToast }) {
     return matchSearch && matchMin && matchMax;
   });
 
-  if (sortOrder === "asc") {
-    processedProducts.sort((a, b) => a.Price - b.Price);
-  } else if (sortOrder === "desc") {
+  if (sortOrder === "asc") processedProducts.sort((a, b) => a.Price - b.Price);
+  else if (sortOrder === "desc")
     processedProducts.sort((a, b) => b.Price - a.Price);
-  }
 
   const totalPages = Math.ceil(processedProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -70,10 +61,9 @@ function CategoryPage({ onAddToCart, showToast }) {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h2 className="text-center capitalize text-primary text-3xl font-bold mb-8">
-        Danh mục: {categorySlug}{" "}
+        Danh mục: {categorySlug}
       </h2>
 
-      {/* THANH CÔNG CỤ LỌC & TÌM KIẾM TƯƠNG TỰ TRANG CHỦ */}
       {products.length > 0 && (
         <section className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-8 flex flex-col lg:flex-row gap-4 items-center justify-between">
           <div className="relative w-full lg:w-1/3">
@@ -88,7 +78,6 @@ function CategoryPage({ onAddToCart, showToast }) {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
             />
           </div>
-
           <div className="flex items-center gap-2 w-full lg:w-auto">
             <input
               type="number"
@@ -106,7 +95,6 @@ function CategoryPage({ onAddToCart, showToast }) {
               className="w-full lg:w-32 px-3 py-2 border border-gray-300 rounded-lg outline-none"
             />
           </div>
-
           <div className="w-full lg:w-auto">
             <select
               value={sortOrder}
@@ -121,7 +109,6 @@ function CategoryPage({ onAddToCart, showToast }) {
         </section>
       )}
 
-      {/* DANH SÁCH SẢN PHẨM */}
       {products.length === 0 ? (
         <p className="text-center text-gray-500 text-lg">Đang tải...</p>
       ) : currentProducts.length === 0 ? (
@@ -137,14 +124,15 @@ function CategoryPage({ onAddToCart, showToast }) {
               src={prod.ImageUrl}
               title={prod.Title}
               price={prod.Price}
+              promoPrice={prod.PromoPrice}
               onAddToCart={onAddToCart}
               showToast={showToast}
+              onOpenLogin={onOpenLogin}
             />
           ))}
         </section>
       )}
 
-      {/* PHÂN TRANG */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-12 mb-6">
           <button
@@ -158,11 +146,7 @@ function CategoryPage({ onAddToCart, showToast }) {
             <button
               key={index + 1}
               onClick={() => handlePageChange(index + 1)}
-              className={`w-10 h-10 rounded-lg font-bold ${
-                currentPage === index + 1
-                  ? "bg-primary text-white"
-                  : "bg-gray-100 hover:bg-gray-200"
-              }`}
+              className={`w-10 h-10 rounded-lg font-bold ${currentPage === index + 1 ? "bg-primary text-white" : "bg-gray-100 hover:bg-gray-200"}`}
             >
               {index + 1}
             </button>
