@@ -1,45 +1,43 @@
 import { useState } from "react";
-import { X, Lock, User, Mail } from "lucide-react";
+import { X, Lock, User, Mail, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginModal({ isOpen, onClose, showToast }) {
   const navigate = useNavigate();
-  // Giao diện: "login", "register", "forgot"
   const [view, setView] = useState("login");
 
-  // State Input Đăng nhập
+  // State đăng nhập
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // State Input Đăng ký
+  // State đăng ký
   const [regUsername, setRegUsername] = useState("");
+  const [regFullName, setRegFullName] = useState("");
   const [regEmail, setRegEmail] = useState("");
+  const [regPhone, setRegPhone] = useState("");
   const [regPassword, setRegPassword] = useState("");
   const [regConfirmPassword, setRegConfirmPassword] = useState("");
 
-  // State Input Quên mật khẩu
+  // State quên mật khẩu
   const [forgotEmail, setForgotEmail] = useState("");
 
-  // NẾU MODAL ĐÓNG, KHÔNG RENDER GÌ CẢ
   if (!isOpen) return null;
 
-  // HÀM XỬ LÝ ĐÓNG MODAL & RESET DỮ LIỆU CÙNG LÚC (Thay thế cho useEffect)
   const handleCloseModal = () => {
-    // 1. Dọn dẹp sạch sẽ dữ liệu
     setView("login");
     setUsername("");
     setPassword("");
     setRegUsername("");
+    setRegFullName("");
     setRegEmail("");
+    setRegPhone("");
     setRegPassword("");
     setRegConfirmPassword("");
     setForgotEmail("");
-
-    // 2. Gọi hàm đóng Modal của App.jsx
     onClose();
   };
 
-  // Xử lý sự kiện Đăng nhập
+  // Đăng nhập
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     if (!username || !password) {
@@ -49,9 +47,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
     try {
       const response = await fetch("http://localhost:5000/api/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
       const data = await response.json();
@@ -70,18 +66,27 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
       }
 
       localStorage.setItem("pcshop_user", JSON.stringify(data.user));
+      window.dispatchEvent(new Event("pcshop_auth_change"));
       showToast("Đăng nhập thành công!", "success");
-      handleCloseModal(); // Đăng nhập xong thì dọn dẹp và đóng Modal
+      handleCloseModal();
     } catch (error) {
       console.error("Lỗi đăng nhập:", error);
       showToast("Không thể kết nối tới server!", "error");
     }
   };
 
-  // Xử lý sự kiện Đăng ký
-  const handleRegisterSubmit = (e) => {
+  // Đăng ký
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    if (!regUsername || !regEmail || !regPassword || !regConfirmPassword) {
+
+    if (
+      !regUsername ||
+      !regFullName ||
+      !regEmail ||
+      !regPhone ||
+      !regPassword ||
+      !regConfirmPassword
+    ) {
       showToast("Vui lòng nhập đầy đủ tất cả các trường!", "error");
       return;
     }
@@ -89,17 +94,46 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
       showToast("Mật khẩu xác nhận không trùng khớp!", "error");
       return;
     }
-    showToast("Đăng ký tài khoản thành công!", "success");
+    if (regPassword.length < 6) {
+      showToast("Mật khẩu phải có ít nhất 6 ký tự!", "error");
+      return;
+    }
 
-    // Reset form đăng ký và tự động chuyển sang form Đăng nhập
-    setRegUsername("");
-    setRegEmail("");
-    setRegPassword("");
-    setRegConfirmPassword("");
-    setView("login");
+    try {
+      const response = await fetch("http://localhost:5000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: regUsername,
+          password: regPassword,
+          fullName: regFullName,
+          email: regEmail,
+          phone: regPhone,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showToast(data.error || "Đăng ký thất bại!", "error");
+        return;
+      }
+
+      showToast("Đăng ký thành công! Vui lòng đăng nhập.", "success");
+      setRegUsername("");
+      setRegFullName("");
+      setRegEmail("");
+      setRegPhone("");
+      setRegPassword("");
+      setRegConfirmPassword("");
+      setView("login");
+    } catch (error) {
+      console.error("Lỗi đăng ký:", error);
+      showToast("Không thể kết nối tới server!", "error");
+    }
   };
 
-  // Xử lý sự kiện Quên mật khẩu
+  // Quên mật khẩu
   const handleForgotSubmit = (e) => {
     e.preventDefault();
     if (!forgotEmail) {
@@ -110,8 +144,6 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
       "Yêu cầu đã được gửi! Vui lòng kiểm tra hộp thư Email.",
       "success",
     );
-
-    // Reset và chuyển về form Đăng nhập
     setForgotEmail("");
     setView("login");
   };
@@ -119,7 +151,6 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full max-w-md bg-white p-8 rounded-xl shadow-2xl mx-4 transform transition-all border border-gray-100">
-        {/* Nút đóng góc phải - Gọi handleCloseModal thay vì onClose */}
         <button
           onClick={handleCloseModal}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
@@ -127,9 +158,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
           <X className="w-6 h-6" />
         </button>
 
-        {/* ========================================== */}
-        {/* THỦ TỤC 1: GIAO DIỆN ĐĂNG NHẬP             */}
-        {/* ========================================== */}
+        {/* ĐĂNG NHẬP */}
         {view === "login" && (
           <div>
             <div className="text-center mb-6">
@@ -144,7 +173,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
             <form onSubmit={handleLoginSubmit} className="space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tài khoản hoặc Email
+                  Tài khoản
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -205,9 +234,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
           </div>
         )}
 
-        {/* ========================================== */}
-        {/* THỦ TỤC 2: GIAO DIỆN ĐĂNG KÝ               */}
-        {/* ========================================== */}
+        {/* ĐĂNG KÝ */}
         {view === "register" && (
           <div>
             <div className="text-center mb-6">
@@ -222,7 +249,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
             <form onSubmit={handleRegisterSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tên tài khoản
+                  Tên tài khoản <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -231,14 +258,30 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
                     value={regUsername}
                     onChange={(e) => setRegUsername(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
-                    placeholder="Nhập tên tài khoản mới..."
+                    placeholder="Nhập tên tài khoản..."
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Địa chỉ Email
+                  Họ và tên <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={regFullName}
+                    onChange={(e) => setRegFullName(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                    placeholder="Nhập họ và tên..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Địa chỉ Email <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -254,7 +297,23 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Mật khẩu
+                  Số điện thoại <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="tel"
+                    value={regPhone}
+                    onChange={(e) => setRegPhone(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                    placeholder="Nhập số điện thoại..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Mật khẩu <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -270,7 +329,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Xác nhận mật khẩu
+                  Xác nhận mật khẩu <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -305,9 +364,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
           </div>
         )}
 
-        {/* ========================================== */}
-        {/* THỦ TỤC 3: GIAO DIỆN QUÊN MẬT KHẨU          */}
-        {/* ========================================== */}
+        {/* QUÊN MẬT KHẨU */}
         {view === "forgot" && (
           <div>
             <div className="text-center mb-6">

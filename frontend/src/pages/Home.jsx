@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import Product from "../components/Product/Product.jsx";
 import { Search } from "lucide-react";
 
-export default function Home({ onAddToCart, showToast }) {
+export default function Home({ onAddToCart, showToast, onOpenLogin }) {
   const [products, setProducts] = useState([]);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -15,10 +14,7 @@ export default function Home({ onAddToCart, showToast }) {
   useEffect(() => {
     fetch("http://localhost:5000/api/products")
       .then((res) => res.json())
-      .then((data) => {
-        // Dữ liệu từ DB giờ đã có sẵn PromoPrice và Description, không cần giả lập nữa
-        setProducts(data);
-      })
+      .then((data) => setProducts(data))
       .catch((err) => console.error("Lỗi khi lấy dữ liệu:", err));
   }, []);
 
@@ -37,11 +33,9 @@ export default function Home({ onAddToCart, showToast }) {
     return matchSearch && matchMin && matchMax;
   });
 
-  if (sortOrder === "asc") {
-    processedProducts.sort((a, b) => a.Price - b.Price);
-  } else if (sortOrder === "desc") {
+  if (sortOrder === "asc") processedProducts.sort((a, b) => a.Price - b.Price);
+  else if (sortOrder === "desc")
     processedProducts.sort((a, b) => b.Price - a.Price);
-  }
 
   const totalPages = Math.ceil(processedProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -73,7 +67,6 @@ export default function Home({ onAddToCart, showToast }) {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
           />
         </div>
-
         <div className="flex items-center gap-2 w-full lg:w-auto">
           <input
             type="number"
@@ -91,7 +84,6 @@ export default function Home({ onAddToCart, showToast }) {
             className="w-full lg:w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary outline-none"
           />
         </div>
-
         <div className="w-full lg:w-auto">
           <select
             value={sortOrder}
@@ -122,9 +114,10 @@ export default function Home({ onAddToCart, showToast }) {
               src={prod.ImageUrl}
               title={prod.Title}
               price={prod.Price}
-              promoPrice={prod.PromoPrice} // Truyền giá khuyến mại xuống card
+              promoPrice={prod.PromoPrice}
               onAddToCart={onAddToCart}
               showToast={showToast}
+              onOpenLogin={onOpenLogin}
             />
           ))}
         </section>
@@ -139,24 +132,15 @@ export default function Home({ onAddToCart, showToast }) {
           >
             Trước
           </button>
-
-          {[...Array(totalPages)].map((_, index) => {
-            const pageNum = index + 1;
-            return (
-              <button
-                key={pageNum}
-                onClick={() => handlePageChange(pageNum)}
-                className={`w-10 h-10 rounded-lg font-bold transition-colors ${
-                  currentPage === pageNum
-                    ? "bg-primary text-white shadow-md"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {pageNum}
-              </button>
-            );
-          })}
-
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => handlePageChange(index + 1)}
+              className={`w-10 h-10 rounded-lg font-bold transition-colors ${currentPage === index + 1 ? "bg-primary text-white shadow-md" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            >
+              {index + 1}
+            </button>
+          ))}
           <button
             disabled={currentPage === totalPages}
             onClick={() => handlePageChange(currentPage + 1)}
