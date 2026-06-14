@@ -25,36 +25,9 @@ export const useCart = () => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
   };
 
-  const clearCart = async (showToast) => {
-    if (cart.length === 0) return;
-
-    const totalPrice = cart.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0,
-    );
-
-    try {
-      const response = await fetch("http://localhost:5000/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          items: cart,
-          totalPrice: totalPrice,
-        }),
-      });
-
-      if (response.ok) {
-        setCart([]);
-        if (showToast) showToast("Thanh toán thành công!", "success");
-      } else {
-        if (showToast) showToast("Có lỗi xảy ra khi lưu đơn hàng!", "error");
-      }
-    } catch (error) {
-      console.error(error);
-      if (showToast) showToast("Không thể kết nối đến Backend!", "error");
-    }
+  // ĐÃ SỬA: Xóa bỏ việc gọi API ở đây, chỉ đơn giản là làm rỗng mảng giỏ hàng
+  const clearCart = () => {
+    setCart([]);
   };
 
   return { cart, handleAddToCart, removeFromCart, clearCart };
