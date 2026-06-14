@@ -2,46 +2,28 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ShoppingCart, ArrowLeft, Minus, Plus } from "lucide-react";
 
-export default function ProductDetail({ onAddToCart, showToast }) {
+export default function ProductDetail({ onAddToCart, showToast, onOpenLogin }) {
   const { productId } = useParams();
-
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  // --- CÁCH CHUẨN REACT ĐỂ RESET STATE KHI ĐỔI SẢN PHẨM KHÁC ---
-  // (Không dùng useEffect để tránh lỗi Cascading renders)
   const [prevId, setPrevId] = useState(productId);
   if (productId !== prevId) {
     setPrevId(productId);
-    setLoading(true); // Tự động reset loading
-    setProduct(null); // Xóa dữ liệu cũ
-    setQuantity(1); // Đưa số lượng về 1
+    setLoading(true);
+    setProduct(null);
+    setQuantity(1);
   }
 
   useEffect(() => {
-    // Bên trong Effect lúc này CHỈ CÓ logic gọi API bất đồng bộ
     fetch("http://localhost:5000/api/products")
       .then((res) => res.json())
       .then((data) => {
         const foundProduct = data.find(
           (item) => String(item.Id) === String(productId),
         );
-
-        if (foundProduct) {
-          // Bồi thêm dữ liệu khuyến mại đồng bộ với trang chủ để test UI
-          const index = data.findIndex(
-            (item) => String(item.Id) === String(productId),
-          );
-          setProduct({
-            ...foundProduct,
-            PromoPrice:
-              index % 2 === 0 ? Math.round(foundProduct.Price * 0.85) : null,
-            Description:
-              foundProduct.Description ||
-              `Sản phẩm ${foundProduct.Title} cao cấp sở hữu cấu hình phần cứng cực mạnh, hoạt động bền bỉ ổn định chuyên dụng dành cho các game thủ chuyên nghiệp và kỹ sư thiết kế.`,
-          });
-        }
+        if (foundProduct) setProduct(foundProduct);
         setLoading(false);
       })
       .catch((err) => {
@@ -73,13 +55,31 @@ export default function ProductDetail({ onAddToCart, showToast }) {
 
   const hasPromo = product.PromoPrice && product.PromoPrice > 0;
   const finalPrice = hasPromo ? product.PromoPrice : product.Price;
+  const discountPercent = hasPromo
+    ? Math.round((1 - product.PromoPrice / product.Price) * 100)
+    : 0;
 
   const handleIncrease = () => setQuantity((prev) => prev + 1);
   const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const handleAddClick = () => {
+    // Kiểm tra đăng nhập
+    const user = (() => {
+      try {
+        return JSON.parse(localStorage.getItem("pcshop_user"));
+      } catch {
+        return null;
+      }
+    })();
+
+    if (!user) {
+      if (showToast)
+        showToast("Vui lòng đăng nhập để thêm vào giỏ hàng!", "error");
+      if (onOpenLogin) onOpenLogin();
+      return;
+    }
+
     if (onAddToCart) {
-      // BỎ VÒNG LẶP FOR ĐI. Truyền trực tiếp biến quantity (số lượng) vào hàm
       onAddToCart(
         {
           id: product.Id,
@@ -87,7 +87,7 @@ export default function ProductDetail({ onAddToCart, showToast }) {
           title: product.Title,
           price: finalPrice,
         },
-        quantity, // <-- Gửi kèm số lượng khách chọn ở đây
+        quantity,
       );
       if (showToast)
         showToast(
@@ -99,7 +99,6 @@ export default function ProductDetail({ onAddToCart, showToast }) {
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8 animate-fade-in">
-      {/* Nút quay lại */}
       <Link
         to="/"
         className="inline-flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium mb-6"
@@ -107,9 +106,8 @@ export default function ProductDetail({ onAddToCart, showToast }) {
         <ArrowLeft className="w-5 h-5" /> Quay lại danh sách
       </Link>
 
-      {/* Bố cục chia đôi: Ảnh Trái - Nội Dung Phải giống mẫu GearVN */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-gray-100">
-        {/* KHỐI TRÁI: KHUNG ẢNH LỚN */}
+        {/* Ảnh */}
         <div className="flex items-center justify-center bg-gray-50 rounded-xl p-4 border border-gray-100 h-[350px] md:h-[450px]">
           <img
             src={product.ImageUrl}
@@ -118,14 +116,13 @@ export default function ProductDetail({ onAddToCart, showToast }) {
           />
         </div>
 
-        {/* KHỐI PHẢI: THÔNG TIN CHI TIẾT */}
+        {/* Thông tin */}
         <div className="flex flex-col justify-between">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800 leading-tight mb-4">
               {product.Title}
             </h2>
 
-            {/* Khung hiển thị giá tiền */}
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-6 flex flex-col gap-1">
               {hasPromo ? (
                 <>
@@ -134,7 +131,7 @@ export default function ProductDetail({ onAddToCart, showToast }) {
                       {product.Price.toLocaleString("vi-VN")}₫
                     </span>
                     <span className="bg-red-100 text-primary text-xs font-bold px-2 py-0.5 rounded">
-                      Tiết kiệm 15%
+                      Tiết kiệm {discountPercent}%
                     </span>
                   </div>
                   <span className="text-primary font-extrabold text-3xl">
@@ -148,7 +145,6 @@ export default function ProductDetail({ onAddToCart, showToast }) {
               )}
             </div>
 
-            {/* Mô tả tóm tắt */}
             <div className="mb-6">
               <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
                 Mô tả sản phẩm
@@ -159,9 +155,7 @@ export default function ProductDetail({ onAddToCart, showToast }) {
             </div>
           </div>
 
-          {/* Cụm chức năng đặt mua */}
           <div className="space-y-4 pt-4 border-t border-gray-100">
-            {/* Bộ chọn số lượng */}
             <div className="flex items-center gap-4">
               <span className="text-sm font-bold text-gray-700">
                 Chọn số lượng:
@@ -188,7 +182,6 @@ export default function ProductDetail({ onAddToCart, showToast }) {
               </div>
             </div>
 
-            {/* Nút Add to Cart */}
             <button
               onClick={handleAddClick}
               className="w-full bg-primary hover:bg-red-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-100 transition-all flex items-center justify-center gap-3 text-lg group"

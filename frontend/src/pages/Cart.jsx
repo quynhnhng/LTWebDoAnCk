@@ -68,12 +68,21 @@ function Cart({ cartItems = [], removeFromCart, clearCart, showToast }) {
     }
 
     // Đóng gói dữ liệu ĐÚNG VỚI CẤU TRÚC BACKEND yêu cầu
+    const currentUser = (() => {
+      try {
+        return JSON.parse(localStorage.getItem("pcshop_user"));
+      } catch {
+        return null;
+      }
+    })();
+
     const payload = {
       items: cartItems,
       totalPrice: totalPrice,
       receiverName: customerName,
       receiverPhone: customerPhone,
       shippingAddress: customerAddress,
+      userId: currentUser?.Id || null, // ← thêm dòng này
     };
 
     try {

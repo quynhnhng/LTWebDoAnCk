@@ -8,12 +8,9 @@ import AboutUs from "./pages/AboutUs.jsx";
 import Cart from "./pages/Cart.jsx";
 import CategoryPage from "./pages/CategoryPage.jsx";
 import { useCart } from "./hooks/useCart.js";
-
 import LoginModal from "./components/Layout/LoginModal.jsx";
 import Toast from "./components/Layout/Toast.jsx";
 import AdminApp from "./admin/admin/AdminApp.jsx";
-
-// 1. Import trang Chi tiết sản phẩm mới tạo vào đây
 import ProductDetail from "./pages/ProductDetail.jsx";
 
 function App() {
@@ -55,7 +52,11 @@ function App() {
             <Route
               path="/"
               element={
-                <Home onAddToCart={handleAddToCart} showToast={showToast} />
+                <Home
+                  onAddToCart={handleAddToCart}
+                  showToast={showToast}
+                  onOpenLogin={() => setIsLoginOpen(true)}
+                />
               }
             />
             <Route path="/about-us" element={<AboutUs />} />
@@ -76,17 +77,17 @@ function App() {
                 <CategoryPage
                   onAddToCart={handleAddToCart}
                   showToast={showToast}
+                  onOpenLogin={() => setIsLoginOpen(true)}
                 />
               }
             />
-
-            {/* 2. Cấu hình định tuyến động cho trang Chi tiết sản phẩm */}
             <Route
               path="/product/:productId"
               element={
                 <ProductDetail
                   onAddToCart={handleAddToCart}
                   showToast={showToast}
+                  onOpenLogin={() => setIsLoginOpen(true)}
                 />
               }
             />

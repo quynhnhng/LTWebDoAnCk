@@ -75,6 +75,18 @@ CREATE TABLE OrderItems (
 );
 GO
 
+-- Bảng thông báo
+CREATE TABLE Notifications (
+    Id         INT IDENTITY(1,1) PRIMARY KEY,
+    UserId     INT NULL FOREIGN KEY REFERENCES Users(Id),  -- NULL = thông báo cho tất cả
+    Title      NVARCHAR(255) NOT NULL,
+    Message    NVARCHAR(MAX) NOT NULL,
+    Type       VARCHAR(50) DEFAULT 'info',   -- info | success | warning | error
+    IsRead     BIT DEFAULT 0,
+    CreatedAt  DATETIME DEFAULT GETDATE()
+);
+GO
+
 -- ============================================================
 -- 2. DỮ LIỆU MẪU: Roles, Users, Categories
 -- ============================================================
