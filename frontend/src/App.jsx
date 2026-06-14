@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Header from "./components/Layout/Header.jsx";
 import Sidebar from "./components/Layout/Sidebar.jsx";
 import Footer from "./components/Layout/Footer.jsx";
@@ -11,11 +11,13 @@ import { useCart } from "./hooks/useCart.js";
 
 import LoginModal from "./components/Layout/LoginModal.jsx";
 import Toast from "./components/Layout/Toast.jsx";
+import AdminApp from "./admin/admin/AdminApp.jsx";
 
 // 1. Import trang Chi tiết sản phẩm mới tạo vào đây
 import ProductDetail from "./pages/ProductDetail.jsx";
 
 function App() {
+  const location = useLocation();
   const [showSidebar, setShowSidebar] = useState(false);
   const { cart, handleAddToCart, removeFromCart, clearCart } = useCart();
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -34,6 +36,10 @@ function App() {
   const handleCloseToast = () => {
     setToast((prev) => ({ ...prev, isVisible: false }));
   };
+
+  if (location.pathname.startsWith("/admin")) {
+    return <AdminApp />;
+  }
 
   return (
     <div className="font-sans min-h-screen flex flex-col bg-gray-50">
