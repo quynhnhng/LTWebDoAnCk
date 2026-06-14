@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { X, Lock, User, Mail } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginModal({ isOpen, onClose, showToast }) {
+  const navigate = useNavigate();
   // Giao diện: "login", "register", "forgot"
   const [view, setView] = useState("login");
 
@@ -38,14 +40,42 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
   };
 
   // Xử lý sự kiện Đăng nhập
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     if (!username || !password) {
       showToast("Vui lòng điền đầy đủ thông tin đăng nhập!", "error");
       return;
     }
-    showToast("Đăng nhập thành công!", "success");
-    handleCloseModal(); // Đăng nhập xong thì dọn dẹp và đóng Modal
+    try {
+      const response = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        showToast(data.error || "Đăng nhập thất bại!", "error");
+        return;
+      }
+
+      if (data.user.Role === "admin") {
+        localStorage.setItem("pcshop_admin", JSON.stringify(data.user));
+        showToast("Đăng nhập admin thành công!", "success");
+        handleCloseModal();
+        navigate("/admin");
+        return;
+      }
+
+      localStorage.setItem("pcshop_user", JSON.stringify(data.user));
+      showToast("Đăng nhập thành công!", "success");
+      handleCloseModal(); // Đăng nhập xong thì dọn dẹp và đóng Modal
+    } catch (error) {
+      console.error("Lỗi đăng nhập:", error);
+      showToast("Không thể kết nối tới server!", "error");
+    }
   };
 
   // Xử lý sự kiện Đăng ký
