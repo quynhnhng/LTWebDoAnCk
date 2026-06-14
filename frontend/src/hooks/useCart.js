@@ -3,31 +3,29 @@ import { useState } from "react";
 export const useCart = () => {
   const [cart, setCart] = useState([]);
 
-  const handleAddToCart = (product) => {
-    const existingProduct = cart.find((item) => item.id === product.id);
+  // 1. Thêm tham số quantityToAdd, mặc định là 1 (nếu bấm ở trang chủ)
+  const handleAddToCart = (product, quantityToAdd = 1) => {
+    // 2. Dùng prevCart (state trước đó) để đảm bảo không bị lỗi bất đồng bộ của React
+    setCart((prevCart) => {
+      const existingProduct = prevCart.find((item) => item.id === product.id);
 
-    if (existingProduct) {
-      setCart(
-        cart.map((item) =>
+      if (existingProduct) {
+        return prevCart.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + quantityToAdd } // Cộng dồn số lượng
             : item,
-        ),
-      );
-      alert(
-        `Đã tăng số lượng ${product.title} lên ${existingProduct.quantity + 1}`,
-      );
-    } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
-      alert(`Đã thêm ${product.title} vào giỏ hàng!`);
-    }
+        );
+      } else {
+        return [...prevCart, { ...product, quantity: quantityToAdd }]; // Thêm mới với số lượng tương ứng
+      }
+    });
   };
 
   const removeFromCart = (productId) => {
-    setCart(cart.filter((item) => item.id !== productId));
+    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
   };
 
-  const clearCart = async () => {
+  const clearCart = async (showToast) => {
     if (cart.length === 0) return;
 
     const totalPrice = cart.reduce(
@@ -49,13 +47,13 @@ export const useCart = () => {
 
       if (response.ok) {
         setCart([]);
-        alert("Thanh toán thành công!");
+        if (showToast) showToast("Thanh toán thành công!", "success");
       } else {
-        alert("Có lỗi xảy ra khi lưu đơn hàng!");
+        if (showToast) showToast("Có lỗi xảy ra khi lưu đơn hàng!", "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Không thể kết nối đến Backend!");
+      if (showToast) showToast("Không thể kết nối đến Backend!", "error");
     }
   };
 
