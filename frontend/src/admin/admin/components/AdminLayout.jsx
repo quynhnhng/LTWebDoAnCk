@@ -6,7 +6,6 @@ import {
   FolderTree,
   LayoutDashboard,
   LogOut,
-  Shield,
   Users,
 } from "lucide-react";
 import { getAdmin } from "../helpers.js";
@@ -14,18 +13,15 @@ import Dashboard from "../pages/Dashboard.jsx";
 import ProductsPage from "../pages/ProductsPage.jsx";
 import CategoriesPage from "../pages/CategoriesPage.jsx";
 import OrdersPage from "../pages/OrdersPage.jsx";
-import UsersPage from "../pages/UsersPage.jsx";
-import AdminsPage from "../pages/AdminsPage.jsx";
+import AccountsPage from "../pages/AccountsPage.jsx";
 import StatisticsPage from "../pages/StatisticsPage.jsx";
 
-// Danh sach menu sidebar, dung chung cho ca mobile va desktop
 const menus = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { to: "/admin/products", label: "Sản phẩm", icon: Boxes },
   { to: "/admin/categories", label: "Danh mục", icon: FolderTree },
   { to: "/admin/orders", label: "Đơn hàng", icon: ClipboardList },
-  { to: "/admin/users", label: "Khách hàng", icon: Users },
-  { to: "/admin/admins", label: "Admin", icon: Shield },
+  { to: "/admin/accounts", label: "Tài khoản", icon: Users },
   { to: "/admin/statistics", label: "Thống kê", icon: BarChart3 },
 ];
 
@@ -34,7 +30,6 @@ export default function AdminLayout() {
   const location = useLocation();
   const admin = getAdmin();
 
-  // Chua dang nhap hoac khong phai admin -> day ve trang dang nhap
   if (!admin || admin.Role !== "admin") return <Navigate to="/admin/login" replace />;
 
   const logout = () => {
@@ -44,7 +39,6 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Sidebar cho man hinh lon */}
       <aside className="fixed left-0 top-0 hidden h-screen w-64 bg-gray-900 text-white md:block">
         <div className="border-b border-gray-700 p-5">
           <h1 className="text-xl font-bold">PC Shop Admin</h1>
@@ -72,7 +66,6 @@ export default function AdminLayout() {
 
       <div className="md:ml-64">
         <header className="sticky top-0 z-20 flex items-center justify-between bg-white px-4 py-3 shadow-sm">
-          {/* Menu rut gon cho man hinh nho */}
           <div className="flex flex-wrap gap-2 md:hidden">
             {menus.map((item) => (
               <Link key={item.to} to={item.to} className="rounded bg-gray-100 px-2 py-1 text-xs">
@@ -94,8 +87,9 @@ export default function AdminLayout() {
             <Route path="products" element={<ProductsPage />} />
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="orders" element={<OrdersPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="admins" element={<AdminsPage />} />
+            <Route path="accounts" element={<AccountsPage />} />
+            <Route path="users" element={<Navigate to="/admin/accounts" replace />} />
+            <Route path="admins" element={<Navigate to="/admin/accounts" replace />} />
             <Route path="statistics" element={<StatisticsPage />} />
           </Routes>
         </main>
