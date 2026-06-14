@@ -16,15 +16,8 @@ export default function Home({ onAddToCart, showToast }) {
     fetch("http://localhost:5000/api/products")
       .then((res) => res.json())
       .then((data) => {
-        // Tạm thời bồi thêm dữ liệu PromoPrice và Description giả lập vào để test UI trang chi tiết
-        const enrichedData = data.map((prod, index) => ({
-          ...prod,
-          PromoPrice: index % 2 === 0 ? Math.round(prod.Price * 0.85) : null, // Giảm 15% cho các sản phẩm chẵn
-          Description:
-            prod.Description ||
-            `Đây là dòng sản phẩm ${prod.Title} hiệu năng cao cao cấp, trang bị các linh kiện thế hệ mới tối ưu cho nhu cầu làm việc đồ họa nặng và chiến game AAA mượt mà.`,
-        }));
-        setProducts(enrichedData);
+        // Dữ liệu từ DB giờ đã có sẵn PromoPrice và Description, không cần giả lập nữa
+        setProducts(data);
       })
       .catch((err) => console.error("Lỗi khi lấy dữ liệu:", err));
   }, []);

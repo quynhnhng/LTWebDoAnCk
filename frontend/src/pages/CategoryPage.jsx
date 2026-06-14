@@ -70,7 +70,7 @@ function CategoryPage({ onAddToCart, showToast }) {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h2 className="text-center capitalize text-primary text-3xl font-bold mb-8">
-        Danh mục: {categorySlug.replace(/-/g, " ")}
+        Danh mục: {categorySlug}{" "}
       </h2>
 
       {/* THANH CÔNG CỤ LỌC & TÌM KIẾM TƯƠNG TỰ TRANG CHỦ */}

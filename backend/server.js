@@ -31,26 +31,31 @@ sql
 // API Lấy danh sách sản phẩm
 app.get("/api/products", async (req, res) => {
   try {
-    const { category } = req.query;
-    let query = "SELECT * FROM Products";
+    const { category } = req.query; // Nhận trực tiếp chuỗi danh mục từ url query
+    let query = `
+      SELECT p.*, c.Name as CategoryName 
+      FROM Products p
+      LEFT JOIN Categories c ON p.CategoryId = c.Id
+    `;
 
     if (category) {
-      query += ` WHERE Category = '${category}'`;
+      query += ` WHERE c.Name = N'${category}'`;
     }
 
-    const result = await sql.query(query);
-    res.json(result.recordset);
+    const result = await sql.query(query); //
+    res.json(result.recordset); //
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Lỗi khi lấy dữ liệu sản phẩm" });
+    console.error(error); //
+    res.status(500).json({ error: "Lỗi khi lấy dữ liệu sản phẩm" }); //
   }
 });
 
 // API Lấy danh sách các danh mục duy nhất từ bảng Products
 app.get("/api/categories", async (req, res) => {
   try {
-    const result = await sql.query("SELECT DISTINCT Category FROM Products");
-    const categories = result.recordset.map((item) => item.Category);
+    // Truy vấn trực tiếp vào bảng Categories mới
+    const result = await sql.query("SELECT Name FROM Categories");
+    const categories = result.recordset.map((item) => item.Name);
 
     res.json(categories);
   } catch (error) {
@@ -62,7 +67,16 @@ app.get("/api/categories", async (req, res) => {
 // API Lưu đơn hàng khi thanh toán
 app.post("/api/orders", async (req, res) => {
   try {
-    const { items, totalPrice } = req.body;
+    // 1. Nhận thêm dữ liệu người nhận từ Frontend gửi lên
+    const { items, totalPrice, receiverName, receiverPhone, shippingAddress } =
+      req.body;
+
+    // (Tùy chọn) Kiểm tra nếu Frontend gửi thiếu thông tin
+    if (!receiverName || !receiverPhone || !shippingAddress) {
+      return res
+        .status(400)
+        .json({ error: "Vui lòng nhập đầy đủ thông tin giao hàng!" });
+    }
 
     const transaction = new sql.Transaction();
     await transaction.begin();
@@ -70,11 +84,16 @@ app.post("/api/orders", async (req, res) => {
     try {
       const request = new sql.Request(transaction);
 
-      // Lưu vào bảng Orders và lấy Id của hóa đơn vừa tạo
+      // 2. Lưu đầy đủ thông tin vào bảng Orders
       const orderResult = await request
         .input("totalPrice", sql.Int, totalPrice)
+        .input("receiverName", sql.NVarChar, receiverName)
+        .input("receiverPhone", sql.VarChar, receiverPhone)
+        .input("shippingAddress", sql.NVarChar, shippingAddress)
         .query(
-          "INSERT INTO Orders (TotalPrice) OUTPUT INSERTED.Id VALUES (@totalPrice)",
+          `INSERT INTO Orders (TotalPrice, ReceiverName, ReceiverPhone, ShippingAddress) 
+           OUTPUT INSERTED.Id 
+           VALUES (@totalPrice, @receiverName, @receiverPhone, @shippingAddress)`,
         );
 
       const orderId = orderResult.recordset[0].Id;
@@ -101,7 +120,7 @@ app.post("/api/orders", async (req, res) => {
       throw err;
     }
   } catch (error) {
-    console.error(error);
+    console.error("Lỗi chi tiết khi thanh toán:", error);
     res.status(500).json({ error: "Lỗi khi thanh toán đơn hàng" });
   }
 });

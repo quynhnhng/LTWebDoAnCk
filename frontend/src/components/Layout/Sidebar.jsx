@@ -58,12 +58,13 @@ export default function Sidebar({ showSidebar, setShowSidebar }) {
                     onClick={() => setShowSidebar(false)}
                     className="block p-2 text-gray-700 hover:text-primary hover:bg-gray-100 rounded transition-colors capitalize font-medium"
                   >
-                    {cat.replace(/-/g, " ")}
+                    {cat}{" "}
+                    {/* Thay thế {cat.replace(/-/g, " ")} bằng {cat} để giữ lại chữ gốc */}
                   </Link>
                 </li>
               ))
             ) : (
-              <li className="p-2 text-gray-500 italic text-sm">Đang tải...</li>
+              <li className="p-2 text-gray-500 italic text-sm">Đang tải...</li> //
             )}
           </ul>
         </aside>

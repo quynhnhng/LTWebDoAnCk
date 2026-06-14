@@ -50,7 +50,8 @@ function Cart({ cartItems = [], removeFromCart, clearCart, showToast }) {
   };
 
   // Xử lý sự kiện gửi đơn đặt hàng
-  const handleSubmitOrder = (e) => {
+  // Xử lý sự kiện gửi đơn đặt hàng
+  const handleSubmitOrder = async (e) => {
     e.preventDefault();
 
     if (
@@ -66,27 +67,45 @@ function Cart({ cartItems = [], removeFromCart, clearCart, showToast }) {
       return;
     }
 
-    const orderData = {
+    // Đóng gói dữ liệu ĐÚNG VỚI CẤU TRÚC BACKEND yêu cầu
+    const payload = {
       items: cartItems,
       totalPrice: totalPrice,
-      shippingInfo: {
-        name: customerName,
-        phone: customerPhone,
-        address: customerAddress,
-        notes: customerNotes,
-      },
+      receiverName: customerName,
+      receiverPhone: customerPhone,
+      shippingAddress: customerAddress,
     };
 
-    console.log("Đơn hàng đã đóng gói chuẩn bị gửi đi:", orderData);
+    try {
+      // Gọi API POST tới Backend
+      const response = await fetch("http://localhost:5000/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-    if (clearCart) {
-      clearCart(showToast);
-      if (!isLoggedIn) {
-        setCustomerName("");
-        setCustomerPhone("");
-        setCustomerAddress("");
-        setCustomerNotes("");
+      if (response.ok) {
+        if (showToast) showToast("Xác nhận đặt hàng thành công!", "success");
+
+        if (clearCart) {
+          clearCart();
+          if (!isLoggedIn) {
+            setCustomerName("");
+            setCustomerPhone("");
+            setCustomerAddress("");
+            setCustomerNotes("");
+          }
+        }
+      } else {
+        const errorData = await response.json();
+        if (showToast)
+          showToast(errorData.error || "Lỗi khi đặt hàng!", "error");
       }
+    } catch (error) {
+      console.error("Lỗi khi kết nối tới Server:", error);
+      if (showToast) showToast("Không thể kết nối tới Server!", "error");
     }
   };
 
