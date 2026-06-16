@@ -6,11 +6,9 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
   const navigate = useNavigate();
   const [view, setView] = useState("login");
 
-  // State đăng nhập
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // State đăng ký
   const [regUsername, setRegUsername] = useState("");
   const [regFullName, setRegFullName] = useState("");
   const [regEmail, setRegEmail] = useState("");
@@ -19,8 +17,8 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
   const [regPassword, setRegPassword] = useState("");
   const [regConfirmPassword, setRegConfirmPassword] = useState("");
 
-  // State quên mật khẩu
   const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -39,7 +37,6 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
     onClose();
   };
 
-  // Đăng nhập
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     if (!username || !password) {
@@ -60,15 +57,17 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
       }
 
       if (data.user.Role === "admin") {
-        localStorage.removeItem("pcshop_user"); // Xóa user session nếu có
+        localStorage.removeItem("pcshop_user");
         localStorage.setItem("pcshop_admin", JSON.stringify(data.user));
+        // QUAN TRỌNG: dispatch event TRƯỚC khi navigate
+        window.dispatchEvent(new Event("pcshop_auth_change"));
         showToast("Đăng nhập admin thành công!", "success");
         handleCloseModal();
         navigate("/admin");
         return;
       }
 
-      localStorage.removeItem("pcshop_admin"); // Xóa admin session nếu có
+      localStorage.removeItem("pcshop_admin");
       localStorage.setItem("pcshop_user", JSON.stringify(data.user));
       window.dispatchEvent(new Event("pcshop_auth_change"));
       showToast("Đăng nhập thành công!", "success");
@@ -79,7 +78,6 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
     }
   };
 
-  // Đăng ký
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
 
@@ -140,8 +138,6 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
     }
   };
 
-  // Quên mật khẩu - gọi API thật
-  const [forgotLoading, setForgotLoading] = useState(false);
   const handleForgotSubmit = async (e) => {
     e.preventDefault();
     if (!forgotEmail) {

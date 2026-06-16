@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Header from "./components/Layout/Header.jsx";
 import Sidebar from "./components/Layout/Sidebar.jsx";
@@ -13,22 +13,35 @@ import Toast from "./components/Layout/Toast.jsx";
 import ProductDetail from "./pages/ProductDetail.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 
-// Admin pages
 import AdminLogin from "./admin/admin/pages/AdminLogin.jsx";
 import AdminLayout from "./admin/admin/components/AdminLayout.jsx";
 
-function getAdmin() {
+function readAdmin() {
   try {
-    return JSON.parse(localStorage.getItem("pcshop_admin"));
+    return JSON.parse(localStorage.getItem("pcshop_admin")) || null;
   } catch {
     return null;
   }
 }
 
-// Guard: chỉ admin mới vào được, còn lại về trang chủ
 function AdminGuard() {
-  const admin = getAdmin();
-  if (!admin || admin.Role !== "admin") {
+  const [admin, setAdmin] = useState(readAdmin);
+
+  useEffect(() => {
+    // Cập nhật state mỗi khi localStorage thay đổi
+    const sync = () => setAdmin(readAdmin());
+    window.addEventListener("storage", sync);
+    window.addEventListener("pcshop_auth_change", sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("pcshop_auth_change", sync);
+    };
+  }, []);
+
+  // Đọc lại trực tiếp từ localStorage mỗi lần render
+  // để không bị trễ một cycle so với event
+  const current = readAdmin();
+  if (!current || current.Role !== "admin") {
     return <Navigate to="/" replace />;
   }
   return <AdminLayout />;
@@ -55,25 +68,21 @@ function App() {
     setToast((prev) => ({ ...prev, isVisible: false }));
   };
 
-  // Trang admin không có Header/Footer của shop
   const isAdminRoute = location.pathname.startsWith("/admin");
 
   if (isAdminRoute) {
     return (
       <Routes>
-        {/* Trang đăng nhập admin: ai cũng vào được để đăng nhập
-            Nếu đã là admin rồi thì redirect vào /admin */}
         <Route
           path="/admin/login"
           element={
-            getAdmin()?.Role === "admin" ? (
+            readAdmin()?.Role === "admin" ? (
               <Navigate to="/admin" replace />
             ) : (
               <AdminLogin />
             )
           }
         />
-        {/* Tất cả route /admin/* còn lại: qua AdminGuard kiểm tra */}
         <Route path="/admin/*" element={<AdminGuard />} />
       </Routes>
     );
