@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Header from "./components/Layout/Header.jsx";
 import Sidebar from "./components/Layout/Sidebar.jsx";
 import Footer from "./components/Layout/Footer.jsx";
@@ -10,8 +10,29 @@ import CategoryPage from "./pages/CategoryPage.jsx";
 import { useCart } from "./hooks/useCart.js";
 import LoginModal from "./components/Layout/LoginModal.jsx";
 import Toast from "./components/Layout/Toast.jsx";
-import AdminApp from "./admin/admin/AdminApp.jsx";
 import ProductDetail from "./pages/ProductDetail.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
+
+// Admin pages
+import AdminLogin from "./admin/admin/pages/AdminLogin.jsx";
+import AdminLayout from "./admin/admin/components/AdminLayout.jsx";
+
+function getAdmin() {
+  try {
+    return JSON.parse(localStorage.getItem("pcshop_admin"));
+  } catch {
+    return null;
+  }
+}
+
+// Guard: chỉ admin mới vào được, còn lại về trang chủ
+function AdminGuard() {
+  const admin = getAdmin();
+  if (!admin || admin.Role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+  return <AdminLayout />;
+}
 
 function App() {
   const location = useLocation();
@@ -34,8 +55,28 @@ function App() {
     setToast((prev) => ({ ...prev, isVisible: false }));
   };
 
-  if (location.pathname.startsWith("/admin")) {
-    return <AdminApp />;
+  // Trang admin không có Header/Footer của shop
+  const isAdminRoute = location.pathname.startsWith("/admin");
+
+  if (isAdminRoute) {
+    return (
+      <Routes>
+        {/* Trang đăng nhập admin: ai cũng vào được để đăng nhập
+            Nếu đã là admin rồi thì redirect vào /admin */}
+        <Route
+          path="/admin/login"
+          element={
+            getAdmin()?.Role === "admin" ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <AdminLogin />
+            )
+          }
+        />
+        {/* Tất cả route /admin/* còn lại: qua AdminGuard kiểm tra */}
+        <Route path="/admin/*" element={<AdminGuard />} />
+      </Routes>
+    );
   }
 
   return (
@@ -43,6 +84,7 @@ function App() {
       <Header
         cartItemCount={cartItemCount}
         onOpenLogin={() => setIsLoginOpen(true)}
+        showToast={showToast}
       />
 
       <div className="flex flex-1 mt-[100px]">
@@ -91,6 +133,7 @@ function App() {
                 />
               }
             />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </main>
       </div>

@@ -87,15 +87,21 @@ export const updateProduct = async (req, res) => {
 // DELETE /api/admin/products/:id
 export const deleteProduct = async (req, res) => {
   try {
+    const productId = req.params.id;
+
+    // First delete related OrderItems to avoid foreign key constraint
     await new sql.Request()
-      .input("Id", sql.Int, req.params.id)
+      .input("ProductId", sql.Int, productId)
+      .query("DELETE FROM OrderItems WHERE ProductId = @ProductId");
+
+    // Then delete the product
+    await new sql.Request()
+      .input("Id", sql.Int, productId)
       .query("DELETE FROM Products WHERE Id = @Id");
 
     res.json({ message: "Da xoa san pham" });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ error: "Khong the xoa san pham da co trong don hang" });
+    res.status(500).json({ error: "Loi khi xoa san pham: " + error.message });
   }
 };

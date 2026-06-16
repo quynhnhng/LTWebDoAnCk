@@ -39,7 +39,7 @@ export const login = async (req, res) => {
 // POST /api/register
 export const register = async (req, res) => {
   try {
-    const { username, password, fullName, email, phone } = req.body;
+    const { username, password, fullName, email, phone, address } = req.body;
 
     if (!username || !password || !fullName) {
       return res
@@ -61,9 +61,10 @@ export const register = async (req, res) => {
       .input("password", sql.VarChar, password)
       .input("fullName", sql.NVarChar, fullName)
       .input("email", sql.VarChar, email || "")
-      .input("phone", sql.VarChar, phone || "").query(`
-        INSERT INTO Users (Username, Password, FullName, Email, Phone, RoleId, Status)
-        VALUES (@username, @password, @fullName, @email, @phone,
+      .input("phone", sql.VarChar, phone || "")
+      .input("address", sql.NVarChar, address || "").query(`
+        INSERT INTO Users (Username, Password, FullName, Email, Phone, Address, RoleId, Status)
+        VALUES (@username, @password, @fullName, @email, @phone, @address,
           (SELECT Id FROM Roles WHERE Name = 'user'), 'active')
       `);
 
@@ -71,5 +72,44 @@ export const register = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Lỗi khi đăng ký tài khoản" });
+  }
+};
+
+// PUT /api/update-profile
+export const updateProfile = async (req, res) => {
+  try {
+    const { id, fullName, email, phone, address } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: "Thiếu thông tin người dùng" });
+    }
+
+    await new sql.Request()
+      .input("Id", sql.Int, id)
+      .input("FullName", sql.NVarChar, fullName || "")
+      .input("Email", sql.VarChar, email || "")
+      .input("Phone", sql.VarChar, phone || "")
+      .input("Address", sql.NVarChar, address || "").query(`
+        UPDATE Users
+        SET FullName = @FullName,
+            Email    = @Email,
+            Phone    = @Phone,
+            Address  = @Address
+        WHERE Id = @Id
+      `);
+
+    // Return updated user data
+    const result = await new sql.Request().input("Id", sql.Int, id).query(`
+        SELECT u.Id, u.Username, u.FullName, u.Email, u.Phone, u.Address, u.Status, r.Name AS Role
+        FROM Users u
+        JOIN Roles r ON u.RoleId = r.Id
+        WHERE u.Id = @Id
+      `);
+
+    const updatedUser = result.recordset[0];
+    res.json({ message: "Cập nhật thành công", user: updatedUser });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Lỗi khi cập nhật thông tin" });
   }
 };

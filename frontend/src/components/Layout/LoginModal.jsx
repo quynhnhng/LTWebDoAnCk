@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Lock, User, Mail, Phone } from "lucide-react";
+import { X, Lock, User, Mail, Phone, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginModal({ isOpen, onClose, showToast }) {
@@ -15,6 +15,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
   const [regFullName, setRegFullName] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPhone, setRegPhone] = useState("");
+  const [regAddress, setRegAddress] = useState("");
   const [regPassword, setRegPassword] = useState("");
   const [regConfirmPassword, setRegConfirmPassword] = useState("");
 
@@ -31,6 +32,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
     setRegFullName("");
     setRegEmail("");
     setRegPhone("");
+    setRegAddress("");
     setRegPassword("");
     setRegConfirmPassword("");
     setForgotEmail("");
@@ -58,6 +60,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
       }
 
       if (data.user.Role === "admin") {
+        localStorage.removeItem("pcshop_user"); // Xóa user session nếu có
         localStorage.setItem("pcshop_admin", JSON.stringify(data.user));
         showToast("Đăng nhập admin thành công!", "success");
         handleCloseModal();
@@ -65,6 +68,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
         return;
       }
 
+      localStorage.removeItem("pcshop_admin"); // Xóa admin session nếu có
       localStorage.setItem("pcshop_user", JSON.stringify(data.user));
       window.dispatchEvent(new Event("pcshop_auth_change"));
       showToast("Đăng nhập thành công!", "success");
@@ -84,10 +88,11 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
       !regFullName ||
       !regEmail ||
       !regPhone ||
+      !regAddress ||
       !regPassword ||
       !regConfirmPassword
     ) {
-      showToast("Vui lòng nhập đầy đủ tất cả các trường!", "error");
+      showToast("Vui lòng nhập đầy đủ tất cả các trường bắt buộc!", "error");
       return;
     }
     if (regPassword !== regConfirmPassword) {
@@ -109,6 +114,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
           fullName: regFullName,
           email: regEmail,
           phone: regPhone,
+          address: regAddress,
         }),
       });
 
@@ -124,6 +130,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
       setRegFullName("");
       setRegEmail("");
       setRegPhone("");
+      setRegAddress("");
       setRegPassword("");
       setRegConfirmPassword("");
       setView("login");
@@ -133,24 +140,42 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
     }
   };
 
-  // Quên mật khẩu
-  const handleForgotSubmit = (e) => {
+  // Quên mật khẩu - gọi API thật
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const handleForgotSubmit = async (e) => {
     e.preventDefault();
     if (!forgotEmail) {
       showToast("Vui lòng nhập địa chỉ Email khôi phục!", "error");
       return;
     }
-    showToast(
-      "Yêu cầu đã được gửi! Vui lòng kiểm tra hộp thư Email.",
-      "success",
-    );
-    setForgotEmail("");
-    setView("login");
+    setForgotLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || "Có lỗi xảy ra, vui lòng thử lại!", "error");
+        return;
+      }
+      showToast(
+        "Email đặt lại mật khẩu đã được gửi! Kiểm tra hộp thư (kể cả thư rác).",
+        "success",
+      );
+      setForgotEmail("");
+      setView("login");
+    } catch {
+      showToast("Không thể kết nối đến server!", "error");
+    } finally {
+      setForgotLoading(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-md bg-white p-8 rounded-xl shadow-2xl mx-4 transform transition-all border border-gray-100">
+      <div className="relative w-full max-w-md bg-white p-8 rounded-xl shadow-2xl mx-4 transform transition-all border border-gray-100 max-h-[90vh] overflow-y-auto">
         <button
           onClick={handleCloseModal}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
@@ -313,6 +338,22 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Địa chỉ nhận hàng <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <textarea
+                    rows="2"
+                    value={regAddress}
+                    onChange={(e) => setRegAddress(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none"
+                    placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Mật khẩu <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -397,7 +438,7 @@ export default function LoginModal({ isOpen, onClose, showToast }) {
                 type="submit"
                 className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-red-700 transition shadow-lg shadow-red-200"
               >
-                GỬI YÊU CẦU
+                {forgotLoading ? "Đang gửi..." : "GỬI YÊU CẦU"}
               </button>
             </form>
 

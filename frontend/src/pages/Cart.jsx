@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-// ĐÃ SỬA LỖI: Đổi ClipboardText thành FileText (Icon có sẵn chuẩn của Lucide)
+import React, { useState, useEffect } from "react";
 import {
   Trash2,
   ShoppingBag,
@@ -10,36 +9,60 @@ import {
   FileText,
 } from "lucide-react";
 
-// ĐÃ THÊM: cartItems = [] để bảo vệ giao diện không bị sập nếu giỏ hàng vô tình bị rỗng (undefined)
 function Cart({ cartItems = [], removeFromCart, clearCart, showToast }) {
-  // -------------------------------------------------------------
-  // GIẢ LẬP TRẠNG THÁI ĐĂNG NHẬP ĐỂ KHẢO SÁT CHỨC NĂNG AUTO-FILL
-  // -------------------------------------------------------------
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-
-  // Giả lập dữ liệu có sẵn trong tài khoản khách hàng
-  const mockUserAccount = {
-    fullName: "Nguyễn Văn Khách Hàng",
-    phone: "0987654321",
-    address: "97 Man Thiện, Phường Hiệp Phú, Thành phố Thủ Đức, TP.HCM",
-    notes: "Giao hàng giờ hành chính giúp em!",
+  // Lấy thông tin người dùng từ localStorage
+  const getCurrentUser = () => {
+    try {
+      return JSON.parse(localStorage.getItem("pcshop_user")) || null;
+    } catch {
+      return null;
+    }
   };
 
-  // Khởi tạo State cho Form
-  const [customerName, setCustomerName] = useState(
-    isLoggedIn ? mockUserAccount.fullName : "",
-  );
-  const [customerPhone, setCustomerPhone] = useState(
-    isLoggedIn ? mockUserAccount.phone : "",
-  );
-  const [customerAddress, setCustomerAddress] = useState(
-    isLoggedIn ? mockUserAccount.address : "",
-  );
-  const [customerNotes, setCustomerNotes] = useState(
-    isLoggedIn ? mockUserAccount.notes : "",
-  );
+  const [currentUser, setCurrentUser] = useState(getCurrentUser);
 
-  // Tính toán số tiền trong giỏ hàng
+  // Khởi tạo State cho Form - tự động điền từ thông tin người dùng
+  const [customerName, setCustomerName] = useState(currentUser?.FullName || "");
+  const [customerPhone, setCustomerPhone] = useState(currentUser?.Phone || "");
+  const [customerAddress, setCustomerAddress] = useState(
+    currentUser?.Address || "",
+  );
+  const [customerNotes, setCustomerNotes] = useState("");
+
+  // Lắng nghe thay đổi đăng nhập/đăng xuất
+  useEffect(() => {
+    const syncUser = () => {
+      const user = getCurrentUser();
+      setCurrentUser(user);
+      if (user) {
+        setCustomerName(user.FullName || "");
+        setCustomerPhone(user.Phone || "");
+        setCustomerAddress(user.Address || "");
+      } else {
+        setCustomerName("");
+        setCustomerPhone("");
+        setCustomerAddress("");
+        setCustomerNotes("");
+      }
+    };
+
+    window.addEventListener("storage", syncUser);
+    window.addEventListener("pcshop_auth_change", syncUser);
+    return () => {
+      window.removeEventListener("storage", syncUser);
+      window.removeEventListener("pcshop_auth_change", syncUser);
+    };
+  }, []);
+
+  // Cập nhật form khi currentUser thay đổi
+  useEffect(() => {
+    if (currentUser) {
+      setCustomerName(currentUser.FullName || "");
+      setCustomerPhone(currentUser.Phone || "");
+      setCustomerAddress(currentUser.Address || "");
+    }
+  }, [currentUser]);
+
   const totalPrice = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
     0,
@@ -49,8 +72,6 @@ function Cart({ cartItems = [], removeFromCart, clearCart, showToast }) {
     return price.toLocaleString("vi-VN") + "₫";
   };
 
-  // Xử lý sự kiện gửi đơn đặt hàng
-  // Xử lý sự kiện gửi đơn đặt hàng
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
 
@@ -67,26 +88,16 @@ function Cart({ cartItems = [], removeFromCart, clearCart, showToast }) {
       return;
     }
 
-    // Đóng gói dữ liệu ĐÚNG VỚI CẤU TRÚC BACKEND yêu cầu
-    const currentUser = (() => {
-      try {
-        return JSON.parse(localStorage.getItem("pcshop_user"));
-      } catch {
-        return null;
-      }
-    })();
-
     const payload = {
       items: cartItems,
       totalPrice: totalPrice,
       receiverName: customerName,
       receiverPhone: customerPhone,
       shippingAddress: customerAddress,
-      userId: currentUser?.Id || null, // ← thêm dòng này
+      userId: currentUser?.Id || null,
     };
 
     try {
-      // Gọi API POST tới Backend
       const response = await fetch("http://localhost:5000/api/orders", {
         method: "POST",
         headers: {
@@ -100,7 +111,7 @@ function Cart({ cartItems = [], removeFromCart, clearCart, showToast }) {
 
         if (clearCart) {
           clearCart();
-          if (!isLoggedIn) {
+          if (!currentUser) {
             setCustomerName("");
             setCustomerPhone("");
             setCustomerAddress("");
@@ -140,7 +151,7 @@ function Cart({ cartItems = [], removeFromCart, clearCart, showToast }) {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* CỘT TRÁI (CHIẾM 7 CỘT): DANH SÁCH SẢN PHẨM DẠNG NẰM NGANG */}
+          {/* CỘT TRÁI: DANH SÁCH SẢN PHẨM */}
           <div className="lg:col-span-7 space-y-4">
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
               <span className="text-sm font-semibold text-gray-600">
@@ -213,17 +224,18 @@ function Cart({ cartItems = [], removeFromCart, clearCart, showToast }) {
             ))}
           </div>
 
-          {/* CỘT PHẢI (CHIẾM 5 CỘT): FORM THÔNG TIN NHẬN HÀNG & BILL */}
+          {/* CỘT PHẢI: FORM THÔNG TIN NHẬN HÀNG & BILL */}
           <div className="lg:col-span-5 bg-white p-6 rounded-2xl shadow-md border border-gray-100 sticky top-28">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2 border-b pb-3">
               <CreditCard className="w-5 h-5 text-gray-600" />
               Thông Tin Đặt Hàng & Thanh Toán
             </h3>
 
-            <div className="mb-4 text-xs flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border border-gray-200">
+            {/* Trạng thái đăng nhập */}
+            <div className="mb-4 text-xs flex items-center bg-gray-50 p-2.5 rounded-lg border border-gray-200">
               <span className="text-gray-600 font-medium">
                 Trạng thái:{" "}
-                {isLoggedIn ? (
+                {currentUser ? (
                   <strong className="text-green-600">
                     Đã đăng nhập (Đã tự điền)
                   </strong>
@@ -231,20 +243,6 @@ function Cart({ cartItems = [], removeFromCart, clearCart, showToast }) {
                   <strong className="text-yellow-600">Khách vãng lai</strong>
                 )}
               </span>
-              <button
-                type="button"
-                onClick={() => {
-                  const nextState = !isLoggedIn;
-                  setIsLoggedIn(nextState);
-                  setCustomerName(nextState ? mockUserAccount.fullName : "");
-                  setCustomerPhone(nextState ? mockUserAccount.phone : "");
-                  setCustomerAddress(nextState ? mockUserAccount.address : "");
-                  setCustomerNotes(nextState ? mockUserAccount.notes : "");
-                }}
-                className="text-primary hover:underline font-bold focus:outline-none"
-              >
-                [Giả lập đổi trạng thái]
-              </button>
             </div>
 
             <form onSubmit={handleSubmitOrder} className="space-y-4">
@@ -301,7 +299,6 @@ function Cart({ cartItems = [], removeFromCart, clearCart, showToast }) {
                   Ghi chú đơn hàng (Không bắt buộc)
                 </label>
                 <div className="relative">
-                  {/* ĐÃ SỬA LỖI ICON Ở ĐÂY */}
                   <FileText className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                   <textarea
                     rows="2"
