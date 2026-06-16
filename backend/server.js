@@ -7,6 +7,7 @@ import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import shopRoutes from "./routes/shop.js";
 import notificationRoutes from "./routes/notifications.js";
+import forgotPasswordRoutes from "./routes/forgotPassword.js";
 import adminProductRoutes from "./routes/adminProducts.js";
 import adminCategoryRoutes from "./routes/adminCategories.js";
 import adminOrderRoutes from "./routes/adminOrders.js";
@@ -28,6 +29,7 @@ await connectDB();
 app.use("/api", authRoutes);
 app.use("/api", shopRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api", forgotPasswordRoutes); // forgot-password, reset-password, verify-reset-token
 
 // Routes admin
 app.use("/api/admin", adminDashboardRoutes);

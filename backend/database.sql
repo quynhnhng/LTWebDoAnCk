@@ -99,7 +99,19 @@ INSERT INTO Users (Username, Password, FullName, Email, Phone, Address, RoleId, 
 VALUES
 ('admin1', '123456', N'Quản trị viên', 'admin@pcshop.com', '0999999999', N'Hà Nội', 1, 'active'),
 ('khachhang1', '123456', N'Nguyễn Văn A', 'nva@gmail.com', '0888888888', N'TP. Hồ Chí Minh', 2, 'active');
+
 GO
+
+-- Thêm cột ResetToken (lưu token đặt lại mật khẩu)
+ALTER TABLE Users
+ADD ResetToken VARCHAR(128) NULL;
+GO
+
+-- Thêm cột ResetExpires (lưu thời gian hết hạn của token)
+ALTER TABLE Users
+ADD ResetExpires DATETIME NULL;
+GO
+
 
 INSERT INTO Categories (Name)
 VALUES
