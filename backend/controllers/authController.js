@@ -1,6 +1,7 @@
 import sql from "../config/db.js";
 
 // POST /api/login
+// frontend/src/components/Layout/LoginModal.jsx
 export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -37,6 +38,7 @@ export const login = async (req, res) => {
 };
 
 // POST /api/register
+// frontend/src/components/Layout/LoginModal.jsx
 export const register = async (req, res) => {
   try {
     const { username, password, fullName, email, phone, address } = req.body;
@@ -76,6 +78,7 @@ export const register = async (req, res) => {
 };
 
 // PUT /api/update-profile
+// frontend/src/components/Layout/Header.jsx
 export const updateProfile = async (req, res) => {
   try {
     const { id, fullName, email, phone, address } = req.body;

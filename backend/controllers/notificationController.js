@@ -2,6 +2,7 @@ import sql from "../config/db.js";
 
 // GET /api/notifications?userId=<id>
 // Lấy thông báo của user (cả thông báo chung userId=NULL và thông báo riêng)
+//Header.jsx
 export const getNotifications = async (req, res) => {
   try {
     const { userId } = req.query;
@@ -26,6 +27,7 @@ export const getNotifications = async (req, res) => {
 
 // PUT /api/notifications/read-all?userId=<id>
 // Đánh dấu tất cả là đã đọc
+//Header.jsx
 export const markAllRead = async (req, res) => {
   try {
     const { userId } = req.query;
@@ -44,6 +46,7 @@ export const markAllRead = async (req, res) => {
 };
 
 // POST /api/notifications  (internal - backend tự gọi khi có sự kiện)
+//orderController.js và adminOrderController.js gọi
 export const createNotification = async ({
   userId,
   title,

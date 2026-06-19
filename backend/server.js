@@ -18,13 +18,15 @@ import adminDashboardRoutes from "./routes/adminDashboard.js";
 
 dotenv.config();
 
+//Khởi tạo máy chủ web
 const app = express();
 
-app.use(cors());
+app.use(cors()); //Cho phép frontend gọi sang
 app.use(express.json());
 
-await connectDB();
+await connectDB(); //Kết nối database
 
+//Phân luồng request
 // Routes công khai
 app.use("/api", authRoutes);
 app.use("/api", shopRoutes);
@@ -40,6 +42,7 @@ app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin/accounts", adminAccountRoutes);
 app.use("/api/admin/admins", adminAdminRoutes);
 
+// nhận request từ bên ngoài vào cổng 5000
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server Backend dang chay tai http://localhost:${PORT}`);

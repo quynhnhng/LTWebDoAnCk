@@ -1,6 +1,8 @@
 import sql from "../config/db.js";
 
 // GET /api/products?category=<tên danh mục>
+//Home.jsx vàCategoryPage.jsx
+//lấy danh sách sản phẩm và hỗ trợ lọc theo danh mục
 export const getProducts = async (req, res) => {
   try {
     const { category } = req.query;
@@ -28,6 +30,8 @@ export const getProducts = async (req, res) => {
 };
 
 // GET /api/categories
+//Sidebar.jsx
+//lấy danh sách các danh mục sản phẩm phục vụ hiển thị menu hoặc sidebar cho người dùng
 export const getCategories = async (req, res) => {
   try {
     const result = await sql.query("SELECT Name FROM Categories ORDER BY Id");

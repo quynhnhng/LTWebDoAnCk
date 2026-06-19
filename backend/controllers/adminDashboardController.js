@@ -3,9 +3,13 @@ import sql from "../config/db.js";
 // GET /api/admin/dashboard
 export const getDashboard = async (req, res) => {
   try {
+    //Tổng tiền đơn hàng đã hoàn thành
+    //Tổng đơn hàng
+    //Tổng sản phẩm
+    //Tổng khách hàng
     const result = await sql.query(`
       SELECT
-        (SELECT ISNULL(SUM(TotalPrice), 0) FROM Orders WHERE Status = N'Hoàn thành') AS totalRevenue,
+        (SELECT ISNULL(SUM(TotalPrice), 0) FROM Orders WHERE Status = N'Hoàn thành') AS totalRevenue, 
         (SELECT COUNT(*) FROM Orders)                                                   AS orderCount,
         (SELECT COUNT(*) FROM Products)                                                 AS productCount,
         (SELECT COUNT(*) FROM Users u JOIN Roles r ON u.RoleId = r.Id WHERE r.Name = 'user') AS customerCount
@@ -21,6 +25,7 @@ export const getDashboard = async (req, res) => {
 // GET /api/admin/statistics
 export const getStatistics = async (req, res) => {
   try {
+    //Doanh thu theo ngày
     const byDay = await sql.query(`
       SELECT
         CONVERT(VARCHAR(10), CreatedAt, 120) AS Label,
@@ -31,7 +36,7 @@ export const getStatistics = async (req, res) => {
       GROUP BY CONVERT(VARCHAR(10), CreatedAt, 120)
       ORDER BY Label DESC
     `);
-
+    //Doanh thu theo tuần
     const byWeek = await sql.query(`
       SELECT
         CONCAT(YEAR(CreatedAt), '-W', DATEPART(WEEK, CreatedAt)) AS Label,
@@ -43,6 +48,7 @@ export const getStatistics = async (req, res) => {
       ORDER BY MIN(CreatedAt) DESC
     `);
 
+    //Doanh thu theo tháng
     const byMonth = await sql.query(`
       SELECT
         CONVERT(VARCHAR(7), CreatedAt, 120) AS Label,

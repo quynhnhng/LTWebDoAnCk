@@ -1,6 +1,7 @@
 import sql from "../config/db.js";
 
 // GET /api/admin/users  — chỉ lấy role = 'user' (khách hàng)
+//Lấy danh sách tất cả khách hàng trong hệ thống
 export const getUsers = async (req, res) => {
   try {
     const result = await sql.query(`

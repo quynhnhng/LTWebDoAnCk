@@ -6,6 +6,10 @@ const toNumberOrNull = (value) => {
 };
 
 // GET /api/admin/products?search=&category=
+/*
+  Lấy danh sách sản phẩm
+  Hỗ trợ tìm kiếm và lọc danh mục
+*/
 export const getProducts = async (req, res) => {
   try {
     const { search = "", category = "" } = req.query;
@@ -30,6 +34,7 @@ export const getProducts = async (req, res) => {
 };
 
 // POST /api/admin/products
+//Thêm sản phẩm mới vào database
 export const createProduct = async (req, res) => {
   try {
     const { CategoryId, Title, Price, PromoPrice, Description, ImageUrl } =
@@ -54,6 +59,7 @@ export const createProduct = async (req, res) => {
 };
 
 // PUT /api/admin/products/:id
+//Cập nhật thông tin sản phẩm
 export const updateProduct = async (req, res) => {
   try {
     const { CategoryId, Title, Price, PromoPrice, Description, ImageUrl } =
@@ -85,6 +91,8 @@ export const updateProduct = async (req, res) => {
 };
 
 // DELETE /api/admin/products/:id
+//Xóa sản phẩm
+//Xóa các OrderItems liên quan trước để tránh lỗi khóa ngoại (Foreign Key Constraint)
 export const deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;

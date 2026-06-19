@@ -1,16 +1,11 @@
 
--- Database hoàn chỉnh
--- ============================================================
+-- Database 
 
 CREATE DATABASE PCShopDB;
 GO
 
 USE PCShopDB;
 GO
-
--- ============================================================
--- 1. TẠO CÁC BẢNG
--- ============================================================
 
 -- Bảng Phân quyền (Roles)
 CREATE TABLE Roles (
@@ -87,9 +82,17 @@ CREATE TABLE Notifications (
 );
 GO
 
--- ============================================================
+-- Thêm cột ResetToken (lưu token đặt lại mật khẩu)
+ALTER TABLE Users
+ADD ResetToken VARCHAR(128) NULL;
+GO
+
+-- Thêm cột ResetExpires (lưu thời gian hết hạn của token)
+ALTER TABLE Users
+ADD ResetExpires DATETIME NULL;
+GO
+
 -- 2. DỮ LIỆU MẪU: Roles, Users, Categories
--- ============================================================
 
 INSERT INTO Roles (Name)
 VALUES ('admin'), ('user');
@@ -102,15 +105,7 @@ VALUES
 
 GO
 
--- Thêm cột ResetToken (lưu token đặt lại mật khẩu)
-ALTER TABLE Users
-ADD ResetToken VARCHAR(128) NULL;
-GO
 
--- Thêm cột ResetExpires (lưu thời gian hết hạn của token)
-ALTER TABLE Users
-ADD ResetExpires DATETIME NULL;
-GO
 
 
 INSERT INTO Categories (Name)
@@ -126,9 +121,8 @@ VALUES
 (N'Chuột');                     -- Id = 9
 GO
 
--- ============================================================
+
 -- 3. SẢN PHẨM - CategoryId = 1: PC
--- ============================================================
 INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUrl) VALUES
 (1, N'PC Intel i7-14700F/ VGA RTX 5070', 54990000, NULL, N'Cấu hình chi tiết đang cập nhật...', 'https://cdn.hstatic.net/products/200000722513/post-01_f9eb7cb1fce5469ebc684c1cbf943f87_grande.jpg'),
 (1, N'PC Intel Core Ultra 7 265F/ VGA RTX 5070', 57990000, NULL, N'Cấu hình chi tiết đang cập nhật...', 'https://cdn.hstatic.net/products/200000722513/post-01_53342b42ceed47a2a10a823de706d545_grande.jpg'),
@@ -146,9 +140,7 @@ INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUr
 (1, N'PC GVN Intel i3-10100F/ VGA GTX 1650 (Entry Gaming)', 9990000, NULL, N'CPU Intel Core i3-10100F, VGA GTX 1650 4GB, RAM 8GB DDR4, SSD 256GB. Entry-level gaming giá hợp lý.', 'https://cdn.hstatic.net/products/200000722513/pc_rtx_5060__2_of_84__c7867c9dc9d94d72a6c18c61e398cee3_grande.jpg');
 GO
 
--- ============================================================
 -- 4. SẢN PHẨM - CategoryId = 2: Laptop
--- ============================================================
 INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUrl) VALUES
 (2, N'Laptop Dell Inspiron 15 3530 i5-1334U/ 8GB/ 512GB/ 15.6" FHD', 13990000, 12990000, N'Intel Core i5-1334U, 8GB RAM, SSD 512GB, màn 15.6 inch Full HD, Windows 11. Laptop văn phòng phổ thông đáng mua.', 'https://cdn.hstatic.net/products/200000722513/ava_0a30ce7dc91d4bf9bc058f46086f636d_master.png'),
 (2, N'Laptop Lenovo IdeaPad Slim 3 14IRH10 Core i5-13420H/ 8GB/ 512GB', 12990000, NULL, N'Intel Core i5-13420H, 8GB RAM, 512GB SSD, màn 14 inch FHD. Mỏng nhẹ phù hợp học sinh sinh viên.', 'https://product.hstatic.net/200000722513/product/ideapad_slim_3_14irh10_ct2_08_7408b9ead5d149d0a406c036154727d4_master.png'),
@@ -164,9 +156,7 @@ INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUr
 (2, N'Laptop HP OmniBook X 14 Snapdragon X Elite/ 16GB/ 512GB', 28990000, NULL, N'Snapdragon X Elite X1E-78-100, 16GB RAM, 512GB SSD, màn 2.2K 60Hz, pin 48h. Copilot+ AI PC.', 'https://www.laptopvip.vn/images/ab__webp/thumbnails/715/585/detailed/36/AndazNA-Silver-Consumer-1659x1246-www.laptopvip.vn-1717228860.png.webp');
 GO
 
--- ============================================================
 -- 5. SẢN PHẨM - CategoryId = 3: Laptop Gaming
--- ============================================================
 INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUrl) VALUES
 (3, N'Laptop Gaming MSI Thin 15 B13UC i7-13620H/ RTX 3050/ 8GB/ 512GB', 16990000, 15490000, N'Intel Core i7-13620H, RTX 3050 4GB, 8GB RAM, 512GB SSD, 15.6 FHD 144Hz. Mỏng nhẹ gaming tầm trung.', 'https://cdn2.fptshop.com.vn/unsafe/750x0/filters:format(webp):quality(75)/msi_thin_15_b13u_abbb0dcf12.png'),
 (3, N'Laptop Gaming Lenovo LOQ 15IAX9E i5-12450HX/ RTX 4050/ 16GB/ 512GB', 18990000, NULL, N'Intel Core i5-12450HX, RTX 4050 6GB, 16GB RAM, 512GB SSD, 15.6 FHD 144Hz. Gaming sinh viên đáng mua.', 'https://cdn.hstatic.net/products/200000722513/loq_essential_15irx11_ct1_01_4961c63b8ebb481baa44fe9bf69f1db7_master.png'),
@@ -181,9 +171,7 @@ INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUr
 (3, N'Laptop Gaming Dell Alienware M15 R6 i7-11800H/ RTX 3070/ 16GB/ 1TB', 49990000, 46990000, N'Intel Core i7-11800H, RTX 3070 8GB, 16GB RAM, 1TB SSD, 15.6 FHD 165Hz, tản nhiệt Cryo-Tech. Huyền thoại Alienware.', 'https://www.laptopvip.vn/images/ab__webp/thumbnails/715/585/detailed/30/avatar-sijs-b2-www.laptopvip.vn-1676706278.jpg.webp');
 GO
 
--- ============================================================
 -- 6. SẢN PHẨM - CategoryId = 4: Main - CPU - VGA
--- ============================================================
 INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUrl) VALUES
 (4, N'CPU Intel Core i5-14400F (LGA1700, 10 nhân, 4.7GHz)', 3890000, 3690000, N'10 nhân 16 luồng, xung tối đa 4.7GHz, TDP 65W. CPU tầm trung xuất sắc cho gaming và đa nhiệm.', 'https://product.hstatic.net/200000722513/product/n22561-001-i5f-_univ_2e1135c9919d46ce97e95d2e19cb74f3_master.png'),
 (4, N'CPU Intel Core i7-14700F (LGA1700, 20 nhân, 5.3GHz)', 7690000, 7490000, N'20 nhân 28 luồng, xung tối đa 5.3GHz. Hiệu năng đa nhiệm cực mạnh cho cả gaming lẫn sáng tạo.', 'https://product.hstatic.net/200000722513/product/n22459-001-rpl-i7f-fhs-dva-bc-univ_png_21fc4faaaca646ae9804e8bcc729ae57_master.png'),
@@ -199,9 +187,7 @@ INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUr
 (4, N'VGA ASUS PRIME GeForce RTX 4060 Ti 8GB', 10490000, 9990000, N'RTX 4060 Ti 8GB GDDR6, 128-bit, DLSS 3. Nâng cấp lý tưởng từ RTX 30 series cho gaming 1080p/1440p.', 'https://product.hstatic.net/200000722513/product/fwebp__7__0758534121424881bf4d9f9b5fec68c1_master.png');
 GO
 
--- ============================================================
 -- 7. SẢN PHẨM - CategoryId = 5: Case - Nguồn - Tản nhiệt
--- ============================================================
 INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUrl) VALUES
 (5, N'Case Corsair 4000D Airflow TG Mid-Tower ATX', 2290000, 1990000, N'Case ATX mid-tower, kính cường lực, 2 fan 120mm tích hợp, luồng khí tốt. Thiết kế tối giản sang trọng.', 'https://product.hstatic.net/200000722513/product/cc-9011291-ww_01__1__0a6064cc137446a6be8f25cc4a2645fd_master.png'),
 (5, N'Case Lian Li LANCOOL 216 RGB Mid-Tower ATX', 2690000, NULL, N'Case ATX mid-tower, 2 fan ARGB 160mm tích hợp, tấm kính cường lực 4mm, quản lý cáp tốt.', 'https://anphat.com.vn/media/product/45216_7.jpg'),
@@ -214,9 +200,7 @@ INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUr
 (5, N'Tản nhiệt nước AIO ASUS ROG RYUJIN III 360 ARGB', 5490000, 4990000, N'AIO 360mm, 3 fan ROG ARGB 120mm, màn LCD 60fps trên đầu bơm, tương thích AM5/LGA1700.', 'https://anphat.com.vn/media/product/45491_1.jpg');
 GO
 
--- ============================================================
 -- 8. SẢN PHẨM - CategoryId = 6: Ổ cứng - RAM
--- ============================================================
 INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUrl) VALUES
 (6, N'SSD Samsung 870 EVO 500GB SATA III 2.5"', 1190000, 990000, N'Dung lượng 500GB, chuẩn SATA III, tốc độ đọc 560MB/s, ghi 530MB/s. SSD phổ thông bán chạy nhất.', 'https://anphat.com.vn/media/product/36410_1611137200_247_o_cung_ssd_500gb_samsung_870_evo_mz_77e500bw_2.jpg'),
 (6, N'SSD Samsung 980 PRO 1TB NVMe PCIe 4.0 M.2', 2490000, 2190000, N'1TB, PCIe Gen 4.0 x4, tốc độ đọc 7000MB/s, ghi 5000MB/s. SSD M.2 cao cấp cho PC và PS5.', 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/o/-/o-cung-ssd-samsung-980-pro-pcie-nvme-4-0x4-1tb_3_.png'),
@@ -228,9 +212,7 @@ INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUr
 (6, N'RAM G.Skill Trident Z5 RGB 32GB (2x16GB) DDR5 6400MHz', 3490000, NULL, N'32GB DDR5-6400, CL32, LED RGB, Intel XMP 3.0. RAM DDR5 hàng đầu cho overclock và gaming.', 'https://bizweb.dktcdn.net/thumb/grande/100/329/122/products/ram-pc-g-skill-trident-z5-rgb-32gb-5600mhz-ddr5-16gbx2-f5-5600u3636c16gx2-tz5rk-b21b41ed-0aa2-4420-9b9b-6b71cc3f5aba-6a2a846d-a863-4a50-a124-33f241d2fd45-1b201605-9865-4dda-a765-9fca69be4cff.png?v=1758522525623');
 GO
 
--- ============================================================
 -- 9. SẢN PHẨM - CategoryId = 7: Tai nghe
--- ============================================================
 INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUrl) VALUES
 (7, N'Tai nghe gaming Akko Verge S9 Ultra White Không dây', 1090000, 990000, N'Không dây 2.4GHz + Bluetooth, driver 40mm, thời lượng pin 65h, micro lọc tiếng ồn AI.', 'https://akkogear.com.vn/wp-content/uploads/2026/04/15-768x768.png'),
 (7, N'Tai nghe Razer Kraken X Black 7.1 Surround', 890000, 790000, N'Có dây 3.5mm, driver 40mm, âm thanh 7.1 Surround ảo, micro cardioid uốn cong, 250g nhẹ bền.', 'https://product.hstatic.net/200000722513/product/earvn-tai-nghe-razer-kraken-x-black-2_335d91e748794846947697af124433bd_8b44a0130db848409d59d5dd0b61239f_master.jpg'),
@@ -243,9 +225,7 @@ INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUr
 (7, N'Tai nghe Logitech G Pro X 2 LIGHTSPEED Wireless', 5490000, 4990000, N'Không dây LIGHTSPEED, driver 50mm Blue VO!CE, pin 50h. Phiên bản Pro cho game thủ chuyên nghiệp.', 'https://product.hstatic.net/200000722513/product/gg8eh9a3_d2b2d4b1a1ea4cbc90c1f8cf559ec020_master.png');
 GO
 
--- ============================================================
 -- 10. SẢN PHẨM - CategoryId = 8: Bàn phím
--- ============================================================
 INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUrl) VALUES
 (8, N'Bàn phím cơ Keychron K3 RGB Hot Swap (75%, Bluetooth)', 1390000, 1290000, N'75% layout, hot swap, RGB, Bluetooth 5.1 và USB-C, tương thích Mac và Win. Siêu mỏng chỉ 22mm.', 'https://www.keychron.com/cdn/shop/products/Keychron-K3-ultra_slim-Hot_swappable-wireless-mechanical-keyboard-Mac-Windows-iOS-Android-75percent-layout-White-backlight-aluminum-frame-low-profile-Gateron-mechanical-switch-red.jpg?v=1699321418&width=1214'),
 (8, N'Bàn phím Akko 3068B Plus Multi-modes RGB (65%)', 1090000, 990000, N'65%, kết nối 3 chế độ Bluetooth và 2.4GHz và USB, Akko switch, RGB. Lựa chọn tầm trung giá tốt nhất.', 'https://akko.vn/wp-content/uploads/2022/11/ban-phim-co-akko-3068b-plus-blue-on-white-001-768x768.jpg'),
@@ -257,9 +237,7 @@ INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUr
 (8, N'Bàn phím cơ Leopold FC900R PD Blue Switch (Full size)', 2190000, NULL, N'Full size Cherry MX Blue, POM plate, build quality hàng đầu. Lựa chọn audiophile bàn phím cơ cao cấp.', 'https://product.hstatic.net/200000722513/product/-leopold-fc900r-pd-white-blue-star-04_1e3fe162014a49aca95a691469103581_c125ba7f411b42b3851840475e0eb8a4_master.jpg');
 GO
 
--- ============================================================
 -- 11. SẢN PHẨM - CategoryId = 9: Chuột
--- ============================================================
 INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUrl) VALUES
 (9, N'Chuột Razer DeathAdder Essential Wired (6400 DPI)', 490000, NULL, N'Có dây USB, 6400 DPI, 5 nút, công thái học tay phải, LED Chroma. Chuột gaming giá rẻ tốt nhất thị trường.', 'https://product.hstatic.net/200000722513/product/thumbchuot_7445abea69bf461e881eeba2b6cbbd8d_master.jpg'),
 (9, N'Chuột Razer Orochi V2 Wireless (18000 DPI)', 1390000, 1190000, N'Không dây 2.4G và Bluetooth, 18000 DPI, pin 425h, nhỏ gọn bỏ túi. Gaming di động tiện lợi tối ưu.', 'https://owlgaming.vn/wp-content/uploads/2024/01/chuot-razer-orochi-v2-black-768x768.jpg'),
@@ -271,9 +249,8 @@ INSERT INTO Products (CategoryId, Title, Price, PromoPrice, Description, ImageUr
 (9, N'Chuột Logitech G502 HERO Wired (25600 DPI)', 990000, 890000, N'Có dây USB, HERO 25K sensor, 25600 DPI, 11 nút, trọng lượng điều chỉnh được, RGB. Bestseller lâu năm.', 'https://product.hstatic.net/200000722513/product/10001_01736316d2b443d0838e5a0741434420_master.png');
 GO
 
--- ============================================================
+
 -- KIỂM TRA KẾT QUẢ
--- ============================================================
 SELECT c.Name AS [Danh mục], COUNT(p.Id) AS [Số sản phẩm]
 FROM Products p
 JOIN Categories c ON p.CategoryId = c.Id

@@ -2,6 +2,7 @@ import sql from "../config/db.js";
 import { createNotification } from "./notificationController.js";
 
 // GET /api/admin/orders?search=&status=
+//Lấy danh sách đơn hàng, hỗ trợ tìm kiếm theo tên/số điện thoại và lọc theo trạng thái.
 export const getOrders = async (req, res) => {
   try {
     const { search = "", status = "" } = req.query;
@@ -24,6 +25,7 @@ export const getOrders = async (req, res) => {
 };
 
 // GET /api/admin/orders/:id
+//Lấy chi tiết một đơn hàng và danh sách sản phẩm thuộc đơn hàng đó.
 export const getOrderById = async (req, res) => {
   try {
     const orderResult = await new sql.Request()
@@ -52,6 +54,7 @@ export const getOrderById = async (req, res) => {
 };
 
 // PUT /api/admin/orders/:id/status
+//Cập nhật trạng thái đơn hàng trong database và tự động tạo thông báo gửi tới khách hàng khi trạng thái thay đổi.
 export const updateOrderStatus = async (req, res) => {
   try {
     const { Status } = req.body;

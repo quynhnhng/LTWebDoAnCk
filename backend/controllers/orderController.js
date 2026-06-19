@@ -2,6 +2,15 @@ import sql from "../config/db.js";
 import { createNotification } from "./notificationController.js";
 
 // POST /api/orders
+// frontend/src/pages/Cart.jsx
+/*
+Dùng để xử lý thanh toán và tạo đơn hàng. 
+Hệ thống nhận thông tin giao hàng và danh sách sản phẩm từ giỏ hàng, 
+  tạo bản ghi trong bảng Orders, 
+  thêm các sản phẩm vào bảng OrderItems, 
+  sử dụng Transaction để đảm bảo tính toàn vẹn dữ liệu, 
+  sau đó tạo thông báo cho khách hàng và trả về mã đơn hàng vừa tạo.
+*/
 export const createOrder = async (req, res) => {
   try {
     const {
