@@ -373,12 +373,13 @@ export default function Header({ cartItemCount, onOpenLogin, showToast }) {
   return (
     <>
       <header className="bg-primary text-white py-6 px-8 flex fixed top-0 left-0 w-full z-50 items-center shadow-md">
-        <Link to="/" className="hover:opacity-80 transition">
+        <Link to="/" className="flex items-center hover:opacity-80 transition">
+          <img src="/pcshoplogo.png" alt="PC Shop Logo" className="w-10 h-10 mr-3" />
           <h1 className="text-3xl font-bold">PC Shop</h1>
         </Link>
 
         <h2 className="ml-24 text-lg font-semibold hidden md:block">
-          Hotline: 123-456-7890
+          Hotline: 032 7239043
         </h2>
 
         <nav className="ml-auto flex items-center gap-6 text-lg">
