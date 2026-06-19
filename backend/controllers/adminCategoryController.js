@@ -1,6 +1,7 @@
 import sql from "../config/db.js";
 
 // GET /api/admin/categories
+//Lấy categories
 export const getCategories = async (req, res) => {
   try {
     const result = await sql.query("SELECT * FROM Categories ORDER BY Id DESC");

@@ -1,6 +1,7 @@
 import sql from "../config/db.js";
 
 // GET /api/admin/admins
+//Lấy admin
 export const getAdmins = async (req, res) => {
   try {
     const result = await sql.query(`

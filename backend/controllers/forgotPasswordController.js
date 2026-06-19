@@ -15,6 +15,14 @@ const createTransporter = () => {
 
 // POST /api/forgot-password
 // Body: { email }
+// frontend/src/components/Layout/LoginModal.jsx
+/*
+  Nhận email từ frontend
+  Kiểm tra email có tồn tại trong DB không
+  Tạo token reset mật khẩu
+  Lưu token + thời gian hết hạn (30 phút) vào database
+  Gửi email có link reset cho người dùng 
+*/
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -134,6 +142,13 @@ export const forgotPassword = async (req, res) => {
 
 // POST /api/reset-password
 // Body: { token, newPassword }
+// frontend/src/pages/ResetPassword.jsx
+/*
+  Nhận token + newPassword từ frontend
+  Kiểm tra token có hợp lệ + chưa hết hạn không
+  Nếu hợp lệ → cập nhật mật khẩu mới vào database
+  Xóa token để không dùng lại được
+*/
 export const resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
@@ -183,7 +198,9 @@ export const resetPassword = async (req, res) => {
 };
 
 // GET /api/verify-reset-token?token=xxx
+// frontend/src/pages/ResetPassword.jsx
 // Kiểm tra token còn hợp lệ không (để frontend hiển thị form)
+//Xác thực link reset mật khẩu còn dùng được hay không
 export const verifyResetToken = async (req, res) => {
   try {
     const { token } = req.query;

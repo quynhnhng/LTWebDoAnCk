@@ -7,12 +7,13 @@ export const updateAccountStatus = async (req, res) => {
   try {
     const { Role, Status } = req.body;
 
+    //check trạng thái có đúng không
     if (!["active", "locked", "banned"].includes(Status)) {
       return res.status(400).json({ error: "Trang thai khong hop le" });
     }
 
-    // Không cho phép khoá chính mình (tùy chọn mở rộng)
-    await new sql.Request()
+    //Update lên DB
+    await new sql.Request() //query gửi xuống database
       .input("Id", sql.Int, req.params.id)
       .input("Status", sql.VarChar, Status)
       .query("UPDATE Users SET Status = @Status WHERE Id = @Id");
